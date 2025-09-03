@@ -1,0 +1,31 @@
+server:
+  port: 8050
+spring:
+  application:
+    name: kaldar
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost/kaldar_db?createDatabaseIfNotExist=true
+    hikari:
+      username: root
+      password: 122024Clux!
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database: mysql
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: mfonm579@gmail.com
+    password: jcao vyuh xakf dume
+    from-name: "Kaldar"
+    from-email: mfonm579@gmail.com
+
+security:
+  otp:
+    digit: 6
+    expiry-minutes: 15
+
+

@@ -1,0 +1,54 @@
+package com.kaldar.kaldar.kaldarService;
+
+import com.kaldar.kaldar.dtos.response.SendVerificationEmailResponse;
+import com.kaldar.kaldar.exceptions.EmailSendException;
+import org.simplejavamail.api.email.Email;
+import org.simplejavamail.api.mailer.Mailer;
+import org.simplejavamail.email.EmailBuilder;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+@Service
+public class DefaultEmailService implements EmailService {
+
+    @Value("${spring.mail.from-name}")
+    private String fromName;
+
+    @Value("${spring.mail.from-email}")
+    private String fromEmail;
+
+    private final Mailer mailer;
+
+
+    @Value("${security.otp.expiry-minutes}")
+    private int otpExpiryMinutes;
+
+    public DefaultEmailService(Mailer mailer) {
+        this.mailer = mailer;
+    }
+
+    @Override
+    public SendVerificationEmailResponse sendVerificationEmail(String recipientEmail, String otpDigitsNumbersGenerate) {
+        try {
+            Email email = EmailBuilder.startingBlank()
+                    .from(fromName, fromEmail)
+                    .to(recipientEmail)
+                    .withSubject(" Your Verification Code ")
+                    .withPlainText("Your verification code is: " + otpDigitsNumbersGenerate +
+                            "\n\nIt expires in " + otpExpiryMinutes + " minutes.")
+                    .withHTMLText(
+                            "<h2 style='color:#2c3e50;'>Verification Code</h2>" +
+                                    "<p>Your OTP is: <b style='font-size:18px;'>" + otpDigitsNumbersGenerate + "</b></p>" +
+                                    "<p>This code will expire in <b>" + otpExpiryMinutes + "</b> minutes.</p>")
+                    .buildEmail();
+            mailer.sendMail(email);
+            return new SendVerificationEmailResponse(
+                    recipientEmail,
+                    otpDigitsNumbersGenerate,
+                    "Verification code sent successfully"
+            );
+        } catch (Exception ex) {
+            throw new EmailSendException(ex.getMessage());
+        }
+    }
+}
