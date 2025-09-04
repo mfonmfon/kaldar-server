@@ -26,6 +26,6 @@ spring:
 security:
   otp:
     digit: 6
-    expiry-minutes: 15
+    expiry-minutes: 1
 
 

@@ -8,6 +8,7 @@ import com.kaldar.kaldar.dtos.request.CustomerRegistrationRequest;
 import com.kaldar.kaldar.dtos.response.CustomerRegistrationResponse;
 import com.kaldar.kaldar.dtos.response.SendVerificationEmailResponse;
 import com.kaldar.kaldar.exceptions.CustomerEmailAlreadyExist;
+import com.kaldar.kaldar.utility.OtpGenerator;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -50,7 +51,7 @@ public class DefaultCustomerService implements CustomerService{
         CustomerEntity customerEntity = buildCustomerEntityInstance(customerRegistrationRequest);
         CustomerEntity savedCustomer =  customerEntityRepository.save(customerEntity);
 
-        String otpDigitsNumbersGenerate = generateOtp(otpDigits);
+        String otpDigitsNumbersGenerate = OtpGenerator.generateOtp(otpDigits);
         String hashedOtpDigits = passwordEncoder.encode(otpDigitsNumbersGenerate);
         VerificationToken verificationToken = new VerificationToken();
         LocalDateTime expiredAt = LocalDateTime.now().plusMinutes(otpExpiryMinutes);
@@ -82,14 +83,7 @@ public class DefaultCustomerService implements CustomerService{
         return customerEntity;
     }
 
-    private String generateOtp(int digits) {
-        SecureRandom secureRandom = new SecureRandom();
-        StringBuilder stringBuilder = new StringBuilder(digits);
-        for (int index = 0; index < digits; index++){
-         stringBuilder.append(secureRandom.nextInt(10));
-        }
-        return stringBuilder.toString();
-    }
+
 
 
     private void validateCustomerEmailExist(String email) {

@@ -1,5 +1,6 @@
 package com.kaldar.kaldar.controllers;
 
+import com.kaldar.kaldar.dtos.request.ResendOtpRequest;
 import com.kaldar.kaldar.dtos.request.VerifyOtpRequest;
 import com.kaldar.kaldar.dtos.response.ApiResponse;
 import com.kaldar.kaldar.dtos.response.VerifyOtpResponse;
@@ -23,12 +24,23 @@ public class VerificationTokenController {
         this.verificationTokenService = verificationTokenService;
     }
 
-
     @PostMapping("/verify-otp")
     public ResponseEntity<ApiResponse<VerifyOtpResponse>> verifyOtp(@RequestBody VerifyOtpRequest verifyOtpRequest){
         VerifyOtpResponse verifyOtpResponse = verificationTokenService.verifyOtp(verifyOtpRequest);
         ApiResponse<VerifyOtpResponse> apiResponse = ApiResponse.<VerifyOtpResponse>
                 builder()
+                .status(HttpStatus.OK.value())
+                .data(verifyOtpResponse)
+                .isSuccess(true)
+                .message(VERIFICATION_OTP_SUCCESS_MESSAGE.getMessage())
+                .build();
+        return ResponseEntity.ok().body(apiResponse);
+    }
+
+    @PostMapping("/resendOtp")
+    public ResponseEntity<ApiResponse<VerifyOtpResponse>> resendOtp(@RequestBody ResendOtpRequest resendOtpRequest){
+        VerifyOtpResponse verifyOtpResponse = verificationTokenService.resendOtp(resendOtpRequest);
+        ApiResponse<VerifyOtpResponse> apiResponse = ApiResponse.<VerifyOtpResponse>builder()
                 .status(HttpStatus.OK.value())
                 .data(verifyOtpResponse)
                 .isSuccess(true)

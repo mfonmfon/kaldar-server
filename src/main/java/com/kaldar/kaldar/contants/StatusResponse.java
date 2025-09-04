@@ -8,7 +8,8 @@ public enum StatusResponse {
     CUSTOMER_NOT_FOUND_EXCEPTION_MESSAGE("Customer not found"),
     OTP_NOT_FOUND_EXCEPTION_MESSAGE("OTP not found for this user"),
     EXPIRED_OTP_EXCEPTION_MESSAGE("OTP has expired"), INVALID_OTP_EXCEPTION("Invalid Otp"),
-    VERIFICATION_OTP_SUCCESS_MESSAGE("Account verified successfully");
+    VERIFICATION_OTP_SUCCESS_MESSAGE("Account verified successfully"),
+    USER_ALREADY_VERIFIED_MESSAGE("User is already verified");
 
     private final    String message;
 

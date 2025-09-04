@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import static com.kaldar.kaldar.contants.StatusResponse.DRY_CLEANER_REGISTRATION_SUCCESS_MESSAGE;
 
 @RestController
-@RequestMapping("/api/v1/drycleaner")
+@RequestMapping("/api/v1/auth/drycleaner")
 public class DryCleanerController {
 
     private final DryCleanerService dryCleanerService;
@@ -23,7 +23,7 @@ public class DryCleanerController {
         this.dryCleanerService = dryCleanerService;
     }
 
-    @PostMapping("/auth/register")
+    @PostMapping("/register")
     public ResponseEntity<ApiResponse<SendVerificationEmailResponse>> register(
             @RequestBody @Valid DryCleanerRegistrationRequest dryCleanerRegistrationRequest){
         SendVerificationEmailResponse dryCleanerRegistrationResponse = dryCleanerService.registerDryCleaner(dryCleanerRegistrationRequest);
@@ -35,6 +35,4 @@ public class DryCleanerController {
                 .build();
         return ResponseEntity.status(HttpStatus.CREATED).body(apiResponse);
     }
-
-
 }
