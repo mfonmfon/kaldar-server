@@ -6,7 +6,6 @@ import com.kaldar.kaldar.domain.entities.VerificationToken;
 import com.kaldar.kaldar.domain.repository.DryCleanerEntityRepository;
 import com.kaldar.kaldar.domain.repository.VerificationTokenRepository;
 import com.kaldar.kaldar.dtos.request.DryCleanerRegistrationRequest;
-import com.kaldar.kaldar.dtos.response.DryCleanerRegistrationResponse;
 import com.kaldar.kaldar.dtos.response.SendVerificationEmailResponse;
 import com.kaldar.kaldar.exceptions.DryCleanerBusinessEmailExistException;
 import com.kaldar.kaldar.exceptions.DryCleanerEmailAlreadyExistException;
@@ -15,10 +14,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import static com.kaldar.kaldar.contants.StatusResponse.DRY_CLEANER_REGISTRATION_SUCCESS_MESSAGE;
 import static com.kaldar.kaldar.contants.StatusResponse.VERIFICATION_TOKEN_SENT_MESSAGE;
 
 @Service
@@ -47,6 +44,7 @@ public class DefaultDryCleanerService implements DryCleanerService{
         validateDryCleanerBusinessEmailExist(dryCleanerRegistrationRequest.getBusinessEmail());
         DryCleanerEntity dryCleanerEntity = buildDryCleanerEntityInstance(dryCleanerRegistrationRequest);
         dryCleanerEntity.setPassword(passwordEncoder.encode(dryCleanerRegistrationRequest.getPassword()));
+        dryCleanerEntity.setVerifiedUser(false);
         dryCleanerEntityRepository.save(dryCleanerEntity);
 
         String otpDigitNumberGenerator = generateOtp(otpDigits);
@@ -62,11 +60,8 @@ public class DefaultDryCleanerService implements DryCleanerService{
                 emailService.sendVerificationEmail(dryCleanerEntity.getEmail(), otpDigitNumberGenerator);
         sendVerificationEmailResponse.setEmail(dryCleanerEntity.getEmail());
         sendVerificationEmailResponse.setExpiresAt(expiredAt.toString());
-        sendVerificationEmailResponse.setVerificationToken(VERIFICATION_TOKEN_SENT_MESSAGE.getMessage());
+        sendVerificationEmailResponse.setVerificationMessage(VERIFICATION_TOKEN_SENT_MESSAGE.getMessage());
         return sendVerificationEmailResponse;
-//        DryCleanerRegistrationResponse dryCleanerRegistrationResponse = new DryCleanerRegistrationResponse();
-//        dryCleanerRegistrationResponse.setMessage(DRY_CLEANER_REGISTRATION_SUCCESS_MESSAGE.getMessage());
-//        return dryCleanerRegistrationResponse;
     }
 
     private String generateOtp(int otpDigits) {

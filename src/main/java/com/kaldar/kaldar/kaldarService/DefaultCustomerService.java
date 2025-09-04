@@ -8,7 +8,6 @@ import com.kaldar.kaldar.dtos.request.CustomerRegistrationRequest;
 import com.kaldar.kaldar.dtos.response.CustomerRegistrationResponse;
 import com.kaldar.kaldar.dtos.response.SendVerificationEmailResponse;
 import com.kaldar.kaldar.exceptions.CustomerEmailAlreadyExist;
-import com.kaldar.kaldar.utils.UtilValidation;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -63,7 +62,7 @@ public class DefaultCustomerService implements CustomerService{
         SendVerificationEmailResponse sendVerificationEmailResponse = emailService.sendVerificationEmail(customerEntity.getEmail(), otpDigitsNumbersGenerate);
         sendVerificationEmailResponse.setEmail(customerEntity.getEmail());
         sendVerificationEmailResponse.setExpiresAt(expiredAt.toString());
-        sendVerificationEmailResponse.setVerificationToken(VERIFICATION_TOKEN_SENT_MESSAGE.getMessage());
+        sendVerificationEmailResponse.setVerificationMessage(VERIFICATION_TOKEN_SENT_MESSAGE.getMessage());
 
         CustomerRegistrationResponse customerRegistrationResponse = new CustomerRegistrationResponse();
         customerRegistrationResponse.setMessage(CUSTOMER_REGISTRATION_SUCCESS_MESSAGE.getMessage());

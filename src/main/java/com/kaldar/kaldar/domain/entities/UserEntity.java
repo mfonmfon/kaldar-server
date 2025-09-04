@@ -22,14 +22,17 @@ public abstract class UserEntity {
    private String phoneNumber;
     @Column(nullable = false)
    private String password;
+
+    @Column(nullable = false)
+    private boolean verifiedUser = false;
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
    private Set<Role> roles = new HashSet<>();
 
-    @Column(nullable = false)
-    private boolean emailVerified = false;
+
+
 
     public Long getId() {
         return id;
@@ -79,6 +82,14 @@ public abstract class UserEntity {
         this.password = password;
     }
 
+    public boolean isVerifiedUser() {
+        return verifiedUser;
+    }
+
+    public void setVerifiedUser(boolean verifiedUser) {
+        this.verifiedUser = verifiedUser;
+    }
+
     public Set<Role> getRoles() {
         return roles;
     }
@@ -87,11 +98,5 @@ public abstract class UserEntity {
         this.roles = roles;
     }
 
-    public boolean isEmailVerified() {
-        return emailVerified;
-    }
 
-    public void setEmailVerified(boolean emailVerified) {
-        this.emailVerified = emailVerified;
-    }
 }

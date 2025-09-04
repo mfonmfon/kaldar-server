@@ -2,13 +2,13 @@ package com.kaldar.kaldar.dtos.response;
 
 public class SendVerificationEmailResponse {
     private String email;
-    private String verificationToken;
+    private String verificationMessage;
     private String expiresAt;
 
 
-    public SendVerificationEmailResponse(String email, String verificationToken, String expiresAt) {
+    public SendVerificationEmailResponse(String email, String verificationMessage, String expiresAt) {
         this.email = email;
-        this.verificationToken = verificationToken;
+        this.verificationMessage = verificationMessage;
         this.expiresAt = expiresAt;
     }
 
@@ -20,12 +20,12 @@ public class SendVerificationEmailResponse {
         this.email = email;
     }
 
-    public String getVerificationToken() {
-        return verificationToken;
+    public String getVerificationMessage() {
+        return verificationMessage;
     }
 
-    public void setVerificationToken(String verificationToken) {
-        this.verificationToken = verificationToken;
+    public void setVerificationMessage(String verificationMessage) {
+        this.verificationMessage = verificationMessage;
     }
 
     public String getExpiresAt() {

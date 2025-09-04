@@ -10,11 +10,12 @@ public class VerificationToken {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String token;
+    private LocalDateTime expiredAt;
+    private LocalDateTime usedAt;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity userEntity;
-    private LocalDateTime expiredAt;
-    private boolean isUsed;
+
 
     public Long getId() {
         return id;
@@ -22,14 +23,6 @@ public class VerificationToken {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public boolean isUsed() {
-        return isUsed;
-    }
-
-    public void setUsed(boolean used) {
-        isUsed = used;
     }
 
     public String getToken() {
@@ -55,5 +48,18 @@ public class VerificationToken {
     public void setExpiredAt(LocalDateTime expiredAt) {
         this.expiredAt = expiredAt;
     }
+
+    public LocalDateTime getUsedAt() {
+        return usedAt;
+    }
+
+    public void setUsedAt(LocalDateTime usedAt) {
+        this.usedAt = usedAt;
+    }
+
+    public boolean isUsed() {
+        return usedAt != null;
+    }
+
 }
 

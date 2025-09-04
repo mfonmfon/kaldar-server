@@ -2,6 +2,7 @@ package com.kaldar.kaldar;
 
 import com.kaldar.kaldar.dtos.request.DryCleanerRegistrationRequest;
 import com.kaldar.kaldar.dtos.response.DryCleanerRegistrationResponse;
+import com.kaldar.kaldar.dtos.response.SendVerificationEmailResponse;
 import com.kaldar.kaldar.kaldarService.DryCleanerService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,7 +29,7 @@ public class DryCleanerServiceTest {
         dryCleanerRegistrationRequest.setBusinessEmail("business.co.gmail.com");
         dryCleanerRegistrationRequest.setShopAddress("Lekki phase 1, Lagos Nigeria");
         dryCleanerRegistrationRequest.setPassword("123456");
-        DryCleanerRegistrationResponse dryCleanerRegistrationResponse = dryCleanerService.registerDryCleaner(dryCleanerRegistrationRequest);
+        SendVerificationEmailResponse dryCleanerRegistrationResponse = dryCleanerService.registerDryCleaner(dryCleanerRegistrationRequest);
         assertThat(dryCleanerRegistrationResponse).isNotNull();
     }
 }

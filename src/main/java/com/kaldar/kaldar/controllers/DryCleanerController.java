@@ -2,6 +2,7 @@ package com.kaldar.kaldar.controllers;
 import com.kaldar.kaldar.dtos.request.DryCleanerRegistrationRequest;
 import com.kaldar.kaldar.dtos.response.ApiResponse;
 import com.kaldar.kaldar.dtos.response.DryCleanerRegistrationResponse;
+import com.kaldar.kaldar.dtos.response.SendVerificationEmailResponse;
 import com.kaldar.kaldar.kaldarService.DryCleanerService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -23,17 +24,16 @@ public class DryCleanerController {
     }
 
     @PostMapping("/auth/register")
-    public ResponseEntity<ApiResponse<DryCleanerRegistrationResponse>> register(
+    public ResponseEntity<ApiResponse<SendVerificationEmailResponse>> register(
             @RequestBody @Valid DryCleanerRegistrationRequest dryCleanerRegistrationRequest){
-        DryCleanerRegistrationResponse dryCleanerRegistrationResponse = dryCleanerService.registerDryCleaner(dryCleanerRegistrationRequest);
-        ApiResponse<DryCleanerRegistrationResponse> apiResponse = ApiResponse.<DryCleanerRegistrationResponse>builder()
+        SendVerificationEmailResponse dryCleanerRegistrationResponse = dryCleanerService.registerDryCleaner(dryCleanerRegistrationRequest);
+        ApiResponse<SendVerificationEmailResponse> apiResponse = ApiResponse.<SendVerificationEmailResponse>builder()
                 .isSuccess(true)
                 .status(HttpStatus.CREATED.value())
                 .message(DRY_CLEANER_REGISTRATION_SUCCESS_MESSAGE.getMessage())
                 .data(dryCleanerRegistrationResponse)
                 .build();
         return ResponseEntity.status(HttpStatus.CREATED).body(apiResponse);
-
     }
 
 
