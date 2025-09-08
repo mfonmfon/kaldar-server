@@ -29,7 +29,7 @@ public class DefaultCustomerService implements CustomerService{
     //Otp Configuration
     private final int otpDigits;
     private final int otpExpiryMinutes;
-//    private static final  Pattern EMAIL_VALIDATION_REGEX
+
 
     public DefaultCustomerService(CustomerEntityRepository customerEntityRepository, JwtService jwtService,
                                   VerificationTokenRepository verificationTokenRepository, EmailService emailService,

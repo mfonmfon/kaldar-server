@@ -24,8 +24,10 @@ public class DefaultVerificationTokenService implements VerificationTokenService
     private final UserEntityRepository userEntityRepository;
     private final EmailService emailService;
 
-    public DefaultVerificationTokenService(VerificationTokenRepository verificationTokenRepository, PasswordEncoder passwordEncoder,
-                                           UserEntityRepository userEntityRepository, EmailService emailService) {
+    public DefaultVerificationTokenService(VerificationTokenRepository verificationTokenRepository,
+                                           PasswordEncoder passwordEncoder,
+                                           UserEntityRepository userEntityRepository,
+                                           EmailService emailService) {
         this.verificationTokenRepository = verificationTokenRepository;
         this.passwordEncoder = passwordEncoder;
         this.userEntityRepository = userEntityRepository;
@@ -38,22 +40,16 @@ public class DefaultVerificationTokenService implements VerificationTokenService
                 .orElseThrow(()-> new UserNotFoundException(CUSTOMER_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
         VerificationToken verificationToken = verificationTokenRepository.findByUserEntityAndUsedAtIsNull(userEntity)
                 .orElseThrow(()-> new OTPNotFoundException(OTP_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
-
         if (userEntity.isVerifiedUser())
             throw new UserAlreadyVerifiedException(USER_ALREADY_VERIFIED_MESSAGE.getMessage());
-
         if (verificationToken.getExpiredAt().isBefore(LocalDateTime.now()))
             throw new ExpiredOtpException(EXPIRED_OTP_EXCEPTION_MESSAGE.getMessage());
-
         if (passwordEncoder.matches(verifyOtpRequest.getOtpInput(), verificationToken.getToken()))
             throw new InvalidOtpException(INVALID_OTP_EXCEPTION.getMessage());
-
         userEntity.setVerifiedUser(true);
         userEntityRepository.save(userEntity);
-
         verificationToken.setUsedAt(LocalDateTime.now());
         verificationTokenRepository.save(verificationToken);
-
         VerifyOtpResponse verifyOtpResponse = buildOTPVerificationResponseInstance(userEntity);
         verifyOtpResponse.setOtpVerificationMessage(VERIFICATION_OTP_SUCCESS_MESSAGE.getMessage());
         return verifyOtpResponse;
@@ -64,25 +60,26 @@ public class DefaultVerificationTokenService implements VerificationTokenService
         UserEntity userEntity = userEntityRepository.findByEmail(resendOtpRequest.getEmail()).
                 orElseThrow(()-> new UserNotFoundException(CUSTOMER_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
         verificationTokenRepository.findByUserEntityAndUsedAtIsNull(userEntity)
-                .ifPresent(oldToken -> {
-                    oldToken.setUsedAt(LocalDateTime.now());
-                    verificationTokenRepository.save(oldToken);
-                });
+                .ifPresent(oldToken -> {oldToken.setUsedAt(LocalDateTime.now());
+                    verificationTokenRepository.save(oldToken);});
         String  newOtp = OtpGenerator.generateOtp(6);
         String hashNewOtp = passwordEncoder.encode(newOtp);
+        VerificationToken verificationToken = buildVerificationTokenInstance(hashNewOtp, userEntity);
+        verificationTokenRepository.save(verificationToken);
+        emailService.sendVerificationEmail(userEntity.getEmail(), newOtp);
+        VerifyOtpResponse verifyOtpResponse = new VerifyOtpResponse();
+        verifyOtpResponse.setEmail(userEntity.getEmail());
+        verifyOtpResponse.setVerifiedAt(verificationToken.getExpiredAt().toString());
+        verifyOtpResponse.setOtpVerificationMessage(VERIFICATION_OTP_SUCCESS_MESSAGE.getMessage());
+        return verifyOtpResponse;
+    }
 
+    private static @NotNull VerificationToken buildVerificationTokenInstance(String hashNewOtp, UserEntity userEntity) {
         VerificationToken verificationToken = new VerificationToken();
         verificationToken.setToken(hashNewOtp);
         verificationToken.setUserEntity(userEntity);
         verificationToken.setExpiredAt(LocalDateTime.now());
-        verificationTokenRepository.save(verificationToken);
-
-        emailService.sendVerificationEmail(userEntity.getEmail(), newOtp);
-
-        VerifyOtpResponse verifyOtpResponse = new VerifyOtpResponse();
-        verifyOtpResponse.setOtpVerificationMessage(VERIFICATION_OTP_SUCCESS_MESSAGE.getMessage());
-        verifyOtpResponse.setVerifiedAt(verificationToken.getExpiredAt().toString());
-        return verifyOtpResponse;
+        return verificationToken;
     }
 
     private static @NotNull VerifyOtpResponse buildOTPVerificationResponseInstance(UserEntity userEntity) {

@@ -27,5 +27,8 @@ security:
   otp:
     digit: 6
     expiry-minutes: 1
+jwt:
+  secret:
+    key: aa711f0400c0dc4e5d4f4ec5e9a79498d6b60a62b38edff3389239aec54f8706
 
 

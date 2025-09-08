@@ -15,12 +15,7 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalApplicationExceptionHandler {
-
-    private ApiErrorResponse buildErrorResponse(
-            String message,
-            HttpStatus status,
-            String path,
-            Object details) {
+    private ApiErrorResponse buildErrorResponse(String message, HttpStatus status, String path, Object details) {
         return new ApiErrorResponse(
                 message,
                 status.getReasonPhrase(),
@@ -35,21 +30,16 @@ public class GlobalApplicationExceptionHandler {
      * Handle validation errors.
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiErrorResponse> handleValidationException(
-            MethodArgumentNotValidException exception,
-            HttpServletRequest request) {
-
+    public ResponseEntity<ApiErrorResponse> handleValidationException(MethodArgumentNotValidException exception, HttpServletRequest request) {
         Map<String, String> fieldErrors = new HashMap<>();
         exception.getBindingResult().getFieldErrors()
                 .forEach(error -> fieldErrors.put(error.getField(), error.getDefaultMessage()));
-
         ApiErrorResponse apiErrorResponse = buildErrorResponse(
                 "Invalid request data",
                 HttpStatus.BAD_REQUEST,
                 request.getRequestURI(),
                 fieldErrors
         );
-
         return ResponseEntity.badRequest().body(apiErrorResponse);
     }
 
@@ -57,17 +47,14 @@ public class GlobalApplicationExceptionHandler {
      * Handle user not found.
      */
     @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ApiErrorResponse> handleUserNotFoundException(
-            UserNotFoundException exception,
+    public ResponseEntity<ApiErrorResponse> handleUserNotFoundException(UserNotFoundException exception,
             HttpServletRequest request) {
-
         ApiErrorResponse apiErrorResponse = buildErrorResponse(
                 exception.getMessage(),
                 HttpStatus.NOT_FOUND,
                 request.getRequestURI(),
                 null
         );
-
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(apiErrorResponse);
     }
 
@@ -79,17 +66,13 @@ public class GlobalApplicationExceptionHandler {
             DryCleanerEmailAlreadyExistException.class,
             DryCleanerBusinessEmailExistException.class
     })
-    public ResponseEntity<ApiErrorResponse> handleEmailConflictExceptions(
-            RuntimeException exception,
-            HttpServletRequest request) {
-
+    public ResponseEntity<ApiErrorResponse> handleEmailConflictExceptions(RuntimeException exception, HttpServletRequest request) {
         ApiErrorResponse apiErrorResponse = buildErrorResponse(
                 exception.getMessage(),
                 HttpStatus.CONFLICT,
                 request.getRequestURI(),
                 null
         );
-
         return ResponseEntity.status(HttpStatus.CONFLICT).body(apiErrorResponse);
     }
 
@@ -102,14 +85,12 @@ public class GlobalApplicationExceptionHandler {
             InvalidOtpException.class
     })
     public ResponseEntity<ApiErrorResponse> handleOtpExceptions(RuntimeException exception, HttpServletRequest request) {
-
         ApiErrorResponse apiErrorResponse = buildErrorResponse(
                 exception.getMessage(),
                 HttpStatus.BAD_REQUEST,
                 request.getRequestURI(),
                 null
         );
-
         return ResponseEntity.badRequest().body(apiErrorResponse);
     }
 
@@ -124,7 +105,6 @@ public class GlobalApplicationExceptionHandler {
                 request.getRequestURI(),
                 exception.getMessage()
         );
-
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(apiErrorResponse);
     }
 }
