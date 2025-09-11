@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import static com.kaldar.kaldar.contants.StatusResponse.DRY_CLEANER_REGISTRATION_SUCCESS_MESSAGE;
 
 @RestController
-@RequestMapping("/api/v1/auth/drycleaner")
+@RequestMapping("/api/v1/drycleaner")
 public class DryCleanerController {
 
     private final DryCleanerService dryCleanerService;
