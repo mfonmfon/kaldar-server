@@ -1,9 +1,8 @@
 package com.kaldar.kaldar.controllers;
 import com.kaldar.kaldar.dtos.request.DryCleanerRegistrationRequest;
 import com.kaldar.kaldar.dtos.response.ApiResponse;
-import com.kaldar.kaldar.dtos.response.DryCleanerRegistrationResponse;
 import com.kaldar.kaldar.dtos.response.SendVerificationEmailResponse;
-import com.kaldar.kaldar.kaldarService.DryCleanerService;
+import com.kaldar.kaldar.kaldarService.interfaces.DryCleanerService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

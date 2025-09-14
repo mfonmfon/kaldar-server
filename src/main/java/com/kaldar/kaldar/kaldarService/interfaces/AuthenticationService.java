@@ -1,4 +1,4 @@
-package com.kaldar.kaldar.kaldarService;
+package com.kaldar.kaldar.kaldarService.interfaces;
 
 import com.kaldar.kaldar.dtos.request.AuthenticationRequest;
 import com.kaldar.kaldar.dtos.response.AuthenticationResponse;

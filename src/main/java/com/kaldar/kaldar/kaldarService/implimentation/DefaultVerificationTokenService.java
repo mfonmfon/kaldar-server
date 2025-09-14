@@ -1,4 +1,4 @@
-package com.kaldar.kaldar.kaldarService;
+package com.kaldar.kaldar.kaldarService.implimentation;
 
 import com.kaldar.kaldar.domain.entities.UserEntity;
 import com.kaldar.kaldar.domain.entities.VerificationToken;
@@ -8,6 +8,8 @@ import com.kaldar.kaldar.dtos.request.ResendOtpRequest;
 import com.kaldar.kaldar.dtos.request.VerifyOtpRequest;
 import com.kaldar.kaldar.dtos.response.VerifyOtpResponse;
 import com.kaldar.kaldar.exceptions.*;
+import com.kaldar.kaldar.kaldarService.interfaces.EmailService;
+import com.kaldar.kaldar.kaldarService.interfaces.VerificationTokenService;
 import com.kaldar.kaldar.utility.OtpGenerator;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,7 +20,7 @@ import java.time.LocalDateTime;
 import static com.kaldar.kaldar.contants.StatusResponse.*;
 
 @Service
-public class DefaultVerificationTokenService implements VerificationTokenService{
+public class DefaultVerificationTokenService implements VerificationTokenService {
     private final VerificationTokenRepository verificationTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserEntityRepository userEntityRepository;

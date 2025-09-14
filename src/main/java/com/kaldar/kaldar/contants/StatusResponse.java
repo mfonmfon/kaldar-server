@@ -11,7 +11,10 @@ public enum StatusResponse {
     INVALID_OTP_EXCEPTION("Invalid Otp"),
     VERIFICATION_OTP_SUCCESS_MESSAGE("Account verified successfully"),
     USER_ALREADY_VERIFIED_MESSAGE("User is already verified"),
-    AUTHENTICATION_SUCCESS_MESSAGE("Login successfully");
+    AUTHENTICATION_SUCCESS_MESSAGE("Login successfully"),
+    ORDERS_NOT_FOUND_EXCEPTION_MESSAGE("Order not found "),
+    DRY_CLEANER_NOT_FOUND_EXCEPTION_MESSAGE("Drycleaner not found"),
+    NO_ITEMS_FOUND_EXCEPTION_MESSAGE("Service not found");
 
     private final    String message;
 

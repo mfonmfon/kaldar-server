@@ -1,17 +1,16 @@
-package com.kaldar.kaldar.kaldarService;
+package com.kaldar.kaldar.kaldarService.implimentation;
 
 import com.kaldar.kaldar.domain.entities.UserEntity;
-import com.kaldar.kaldar.domain.repository.UserEntityRepository;
 import com.kaldar.kaldar.dtos.request.AuthenticationRequest;
 import com.kaldar.kaldar.dtos.response.AuthenticationResponse;
+import com.kaldar.kaldar.kaldarService.interfaces.AuthenticationService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
-public class DefaultAuthenticationService implements AuthenticationService{
+public class DefaultAuthenticationService implements AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
 

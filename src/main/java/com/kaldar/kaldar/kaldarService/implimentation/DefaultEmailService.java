@@ -1,7 +1,8 @@
-package com.kaldar.kaldar.kaldarService;
+package com.kaldar.kaldar.kaldarService.implimentation;
 
 import com.kaldar.kaldar.dtos.response.SendVerificationEmailResponse;
 import com.kaldar.kaldar.exceptions.EmailSendException;
+import com.kaldar.kaldar.kaldarService.interfaces.EmailService;
 import org.simplejavamail.api.email.Email;
 import org.simplejavamail.api.mailer.Mailer;
 import org.simplejavamail.email.EmailBuilder;

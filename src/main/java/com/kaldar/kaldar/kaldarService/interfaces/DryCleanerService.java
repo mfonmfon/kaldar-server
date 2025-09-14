@@ -1,11 +1,14 @@
-package com.kaldar.kaldar.kaldarService;
+package com.kaldar.kaldar.kaldarService.interfaces;
 
+import com.kaldar.kaldar.dtos.request.AcceptOrderRequest;
+import com.kaldar.kaldar.dtos.request.AcceptOrderResponse;
 import com.kaldar.kaldar.dtos.request.DryCleanerRegistrationRequest;
-import com.kaldar.kaldar.dtos.response.DryCleanerRegistrationResponse;
 import com.kaldar.kaldar.dtos.response.SendVerificationEmailResponse;
 
 public interface DryCleanerService {
 
     SendVerificationEmailResponse registerDryCleaner(DryCleanerRegistrationRequest dryCleanerRegistrationRequest);
+
+    AcceptOrderResponse acceptOrder(AcceptOrderRequest acceptOrderRequest);
 
 }

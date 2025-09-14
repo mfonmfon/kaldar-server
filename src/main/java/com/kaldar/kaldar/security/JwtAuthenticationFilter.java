@@ -1,6 +1,6 @@
 package com.kaldar.kaldar.security;
 
-import com.kaldar.kaldar.kaldarService.JwtService;
+import com.kaldar.kaldar.kaldarService.implimentation.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

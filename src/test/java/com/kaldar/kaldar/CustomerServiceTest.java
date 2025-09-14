@@ -2,16 +2,13 @@ package com.kaldar.kaldar;
 
 import com.kaldar.kaldar.domain.repository.CustomerEntityRepository;
 import com.kaldar.kaldar.dtos.request.CustomerRegistrationRequest;
-import com.kaldar.kaldar.dtos.response.AuthenticationResponse;
 import com.kaldar.kaldar.dtos.response.CustomerRegistrationResponse;
-import com.kaldar.kaldar.dtos.response.SendVerificationEmailResponse;
-import com.kaldar.kaldar.kaldarService.CustomerService;
+import com.kaldar.kaldar.kaldarService.interfaces.CustomerService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
 
 @SpringBootTest
 public class CustomerServiceTest {
@@ -35,4 +32,7 @@ public class CustomerServiceTest {
         assertThat(sendVerificationEmailResponse).isNotNull();
 
     }
+
+
+
 }

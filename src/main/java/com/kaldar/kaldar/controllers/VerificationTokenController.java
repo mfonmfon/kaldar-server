@@ -3,7 +3,7 @@ import com.kaldar.kaldar.dtos.request.ResendOtpRequest;
 import com.kaldar.kaldar.dtos.request.VerifyOtpRequest;
 import com.kaldar.kaldar.dtos.response.ApiResponse;
 import com.kaldar.kaldar.dtos.response.VerifyOtpResponse;
-import com.kaldar.kaldar.kaldarService.VerificationTokenService;
+import com.kaldar.kaldar.kaldarService.interfaces.VerificationTokenService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

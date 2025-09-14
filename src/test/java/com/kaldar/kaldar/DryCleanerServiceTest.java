@@ -1,9 +1,10 @@
 package com.kaldar.kaldar;
 
+import com.kaldar.kaldar.dtos.request.AcceptOrderRequest;
+import com.kaldar.kaldar.dtos.request.AcceptOrderResponse;
 import com.kaldar.kaldar.dtos.request.DryCleanerRegistrationRequest;
-import com.kaldar.kaldar.dtos.response.DryCleanerRegistrationResponse;
 import com.kaldar.kaldar.dtos.response.SendVerificationEmailResponse;
-import com.kaldar.kaldar.kaldarService.DryCleanerService;
+import com.kaldar.kaldar.kaldarService.interfaces.DryCleanerService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -32,4 +33,16 @@ public class DryCleanerServiceTest {
         SendVerificationEmailResponse dryCleanerRegistrationResponse = dryCleanerService.registerDryCleaner(dryCleanerRegistrationRequest);
         assertThat(dryCleanerRegistrationResponse).isNotNull();
     }
+
+    @Test
+    public void testThatDryCleanerCanAcceptOrders(){
+        Long orderId = 1L;
+        Long dryCleanerId = 1L;
+        AcceptOrderRequest acceptOrderRequest = new AcceptOrderRequest();
+        acceptOrderRequest.setOrderId(orderId);
+        acceptOrderRequest.setDryCleanerId(dryCleanerId);
+//        acceptOrderRequest
+        AcceptOrderResponse acceptOrderResponse = dryCleanerService.acceptOrder(acceptOrderRequest);
+    }
+
 }

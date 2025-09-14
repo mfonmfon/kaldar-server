@@ -1,4 +1,4 @@
-package com.kaldar.kaldar.kaldarService;
+package com.kaldar.kaldar.kaldarService.implimentation;
 import com.kaldar.kaldar.contants.Role;
 import com.kaldar.kaldar.domain.entities.CustomerEntity;
 import com.kaldar.kaldar.domain.entities.VerificationToken;
@@ -8,19 +8,20 @@ import com.kaldar.kaldar.dtos.request.CustomerRegistrationRequest;
 import com.kaldar.kaldar.dtos.response.CustomerRegistrationResponse;
 import com.kaldar.kaldar.dtos.response.SendVerificationEmailResponse;
 import com.kaldar.kaldar.exceptions.CustomerEmailAlreadyExist;
+import com.kaldar.kaldar.kaldarService.interfaces.CustomerService;
+import com.kaldar.kaldar.kaldarService.interfaces.EmailService;
 import com.kaldar.kaldar.utility.OtpGenerator;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import java.security.SecureRandom;
+
 import java.time.LocalDateTime;
 
 import static com.kaldar.kaldar.contants.StatusResponse.CUSTOMER_REGISTRATION_SUCCESS_MESSAGE;
 import static com.kaldar.kaldar.contants.StatusResponse.VERIFICATION_TOKEN_SENT_MESSAGE;
 
-
 @Service
-public class DefaultCustomerService implements CustomerService{
+public class DefaultCustomerService implements CustomerService {
     private final CustomerEntityRepository customerEntityRepository;
     private final JwtService jwtService;
     private final VerificationTokenRepository verificationTokenRepository;
@@ -29,7 +30,6 @@ public class DefaultCustomerService implements CustomerService{
     //Otp Configuration
     private final int otpDigits;
     private final int otpExpiryMinutes;
-
 
     public DefaultCustomerService(CustomerEntityRepository customerEntityRepository, JwtService jwtService,
                                   VerificationTokenRepository verificationTokenRepository, EmailService emailService,
@@ -82,9 +82,6 @@ public class DefaultCustomerService implements CustomerService{
         customerEntity.setPassword(passwordEncoder.encode(customerRegistrationRequest.getPassword()));
         return customerEntity;
     }
-
-
-
 
     private void validateCustomerEmailExist(String email) {
         Boolean isCustomerEmailExist = customerEntityRepository.existsByEmail(email);
