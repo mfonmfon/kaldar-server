@@ -19,11 +19,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import static com.kaldar.kaldar.contants.StatusResponse.*;
@@ -93,28 +91,45 @@ public class DefaultDryCleanerService implements DryCleanerService {
         DryCleanerEntity dryCleanerEntity = dryCleanerEntityRepository.findById(acceptOrderRequest.getDryCleanerId())
                 .orElseThrow(()-> new UserNotFoundException(DRY_CLEANER_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
         //check if the order is assign to the drycleaner
-        if (orders.getDryCleaner() == null || !orders.getDryCleaner().getId().equals(dryCleanerEntity.getId())){
-            throw new InvalidOrderAssignmentException("Order is not assign to this drycleaner");
-        }
-        if (orders.getOrderStatus() != OrderStatus.ACCEPTED && orders.getOrderStatus() != OrderStatus.PENDING_ACCEPTANCE){
-            throw new InvalidOrderAssignmentException("Order cannot be accepted ");
-        }
-        if (Boolean.TRUE.equals(dryCleanerEntity.isActive())){
-            throw new NoActiveDryCleanerExcpetion("Drycleaner is not active");
-        }
+        validateDryCleanerAssignment(orders, dryCleanerEntity);
+        validateOrderStatus(orders);
+        validateDryCleanerStatus(dryCleanerEntity);
         orders.setDryCleaner(dryCleanerEntity);
         orders.setOrderStatus(OrderStatus.SCHEDULED);
         if (orders.getPickupAt() == null){
             orders.setPickupAt(LocalDateTime.now().plusHours(24));
         }
-        List<String> missingService = findMissingService(orders, dryCleanerEntity);
-        if (missingService.isEmpty())
-            throw new MissingServiceException("Can not accept order; missing service");
-
+        validateMissingService(orders, dryCleanerEntity);
         orderEntityRepository.save(orders);
         AcceptOrderResponse acceptOrderResponse = new AcceptOrderResponse();
-        acceptOrderResponse.setStatus("SUCCESS");
+        acceptOrderResponse.setOrderId(orders.getId());
+        acceptOrderResponse.setStatus(ACCEPT_ORDER_SUCCESS_MESSAGE.getMessage());
+        acceptOrderResponse.setTimestamp(LocalDateTime.now());
         return acceptOrderResponse;
+    }
+
+    private void validateMissingService(OrderEntity orders, DryCleanerEntity dryCleanerEntity) {
+        List<String> missingService = findMissingService(orders, dryCleanerEntity);
+        if (missingService.isEmpty())
+            throw new MissingServicesNotEmptyException(missingService);
+    }
+
+    private void validateDryCleanerStatus(DryCleanerEntity dryCleanerEntity) {
+        if (Boolean.FALSE.equals(dryCleanerEntity.isActive())){
+            throw new NoActiveDryCleanerException(dryCleanerEntity.getId());
+        }
+    }
+
+    private void validateOrderStatus(OrderEntity orders) {
+        if (orders.getOrderStatus() != OrderStatus.ACCEPTED && orders.getOrderStatus() != OrderStatus.PENDING_ACCEPTANCE){
+            throw new InvalidOrderAssignmentException("Order cannot be accepted in it's current status"+ orders.getOrderStatus());
+        }
+    }
+
+    private void validateDryCleanerAssignment(OrderEntity orders, DryCleanerEntity dryCleanerEntity) {
+        if (orders.getDryCleaner() == null || !orders.getDryCleaner().getId().equals(dryCleanerEntity.getId())){
+            throw new InvalidOrderAssignmentException("Order is not assign to this drycleaner");
+        }
     }
 
     private List<String> findMissingService(OrderEntity orders, DryCleanerEntity dryCleanerEntity) {

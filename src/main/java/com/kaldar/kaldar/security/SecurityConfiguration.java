@@ -27,17 +27,18 @@ public class SecurityConfiguration {
     public SecurityFilterChain doSecurityFilterChain(HttpSecurity http) throws Exception{
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth-> auth
-                        .requestMatchers("/api/v1/auth/**").permitAll()
-                        .requestMatchers("/api/v1/customer/**").hasRole("CUSTOMER")
-                        .requestMatchers("/api/v1/auth/drycleaner/**").hasRole("DRYCLEANER")
-                        .anyRequest().authenticated()
-                )
+                .sessionManagement(session-> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-        return http.build();
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry -> authorizationManagerRequestMatcherRegistry
+                        //public auth route endpoint
+                        .requestMatchers("/api/v1/auth/**").permitAll()
+                        //customer route endpoints
+                        .requestMatchers("/api/v1/customer/**").hasRole("CUSTOMER")
+                        //dryCleaner route endpoints
+                        .requestMatchers("/api//v1/drycleaner/**").hasRole("DRYCLEANER")
+                        .anyRequest().authenticated()
+                );
+            return http.build();
     }
 }

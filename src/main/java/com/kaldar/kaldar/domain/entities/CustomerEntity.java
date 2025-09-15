@@ -1,5 +1,4 @@
 package com.kaldar.kaldar.domain.entities;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
@@ -29,7 +28,5 @@ public class CustomerEntity extends UserEntity{
     public void setDefaultAddress(String defaultPickupAddress) {
         this.defaultAddress = defaultPickupAddress;
     }
-
-
 
 }

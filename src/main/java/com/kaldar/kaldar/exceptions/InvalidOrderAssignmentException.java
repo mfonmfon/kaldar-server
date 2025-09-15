@@ -1,7 +1,9 @@
 package com.kaldar.kaldar.exceptions;
 
-public class InvalidOrderAssignmentException extends RuntimeException {
+import org.springframework.http.HttpStatus;
+
+public class InvalidOrderAssignmentException extends KaldarBusinessException {
     public InvalidOrderAssignmentException(String message) {
-        super(message);
+        super("INVALID_ORDER_ASSIGNMENT", message, HttpStatus.BAD_REQUEST);
     }
 }
