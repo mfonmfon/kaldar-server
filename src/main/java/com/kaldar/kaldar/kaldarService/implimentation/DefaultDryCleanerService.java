@@ -9,6 +9,8 @@ import com.kaldar.kaldar.domain.repository.VerificationTokenRepository;
 import com.kaldar.kaldar.dtos.request.AcceptOrderRequest;
 import com.kaldar.kaldar.dtos.request.AcceptOrderResponse;
 import com.kaldar.kaldar.dtos.request.DryCleanerRegistrationRequest;
+import com.kaldar.kaldar.dtos.request.UpdateDryCleanerProfileRequest;
+import com.kaldar.kaldar.dtos.response.DryCleanerProfileResponse;
 import com.kaldar.kaldar.dtos.response.SendVerificationEmailResponse;
 import com.kaldar.kaldar.exceptions.*;
 import com.kaldar.kaldar.kaldarService.interfaces.DryCleanerService;
@@ -67,12 +69,30 @@ public class DefaultDryCleanerService implements DryCleanerService {
         LocalDateTime expiredAt = LocalDateTime.now().plusMinutes(expiredOtpMin);
         VerificationToken verificationToken = buildVerificationToken(hashPlainOtpDigits, expiredAt, dryCleanerEntity);
         verificationTokenRepository.save(verificationToken);
-        SendVerificationEmailResponse sendVerificationEmailResponse =
-                emailService.sendVerificationEmail(dryCleanerEntity.getEmail(), otpDigitNumberGenerator);
+        SendVerificationEmailResponse sendVerificationEmailResponse = emailService.sendVerificationEmail(dryCleanerEntity.getEmail(), otpDigitNumberGenerator);
         sendVerificationEmailResponse.setEmail(dryCleanerEntity.getEmail());
         sendVerificationEmailResponse.setExpiresAt(expiredAt.toString());
         sendVerificationEmailResponse.setVerificationMessage(VERIFICATION_TOKEN_SENT_MESSAGE.getMessage());
         return sendVerificationEmailResponse;
+    }
+
+    @Override
+    public DryCleanerProfileResponse editProfile(UpdateDryCleanerProfileRequest updateDryCleanerProfileRequest) {
+        DryCleanerEntity dryCleanerEntity = dryCleanerEntityRepository.findById(updateDryCleanerProfileRequest.getDryCleanerId())
+                .orElseThrow(()-> new UserNotFoundException(DRY_CLEANER_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
+        mapDyrCleanerProfileUpdateRequest(updateDryCleanerProfileRequest, dryCleanerEntity);
+        DryCleanerProfileResponse dryCleanerProfileResponse = new DryCleanerProfileResponse();
+        dryCleanerProfileResponse.setMessage(DRY_CLEANER_PROFILE_UPDATED_SUCCESS_MESSAGE.getMessage());
+        return  dryCleanerProfileResponse;
+    }
+
+    private static void mapDyrCleanerProfileUpdateRequest(UpdateDryCleanerProfileRequest updateDryCleanerProfileRequest, DryCleanerEntity dryCleanerEntity) {
+        dryCleanerEntity.setFirstName(updateDryCleanerProfileRequest.getFirstName());
+        dryCleanerEntity.setLastName(updateDryCleanerProfileRequest.getLastName());
+        dryCleanerEntity.setBusinessName(updateDryCleanerProfileRequest.getBusinessName());
+        dryCleanerEntity.setBusinessAddress(updateDryCleanerProfileRequest.getShopAddress());
+        dryCleanerEntity.setPhoneNumber(updateDryCleanerProfileRequest.getBusinessPhoneNumber());
+        dryCleanerEntity.setUpdatedAt(updateDryCleanerProfileRequest.getUpdatedAt());
     }
 
     private static @NotNull VerificationToken buildVerificationToken(String hashPlainOtpDigits, LocalDateTime expiredAt,
@@ -84,64 +104,6 @@ public class DefaultDryCleanerService implements DryCleanerService {
         return verificationToken;
     }
 
-    @Override
-    public AcceptOrderResponse acceptOrder(AcceptOrderRequest acceptOrderRequest) {
-        OrderEntity orders = orderEntityRepository.findById(acceptOrderRequest.getOrderId())
-                .orElseThrow(()-> new OrdersNotFoundException(ORDERS_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
-        DryCleanerEntity dryCleanerEntity = dryCleanerEntityRepository.findById(acceptOrderRequest.getDryCleanerId())
-                .orElseThrow(()-> new UserNotFoundException(DRY_CLEANER_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
-        //check if the order is assign to the drycleaner
-        validateDryCleanerAssignment(orders, dryCleanerEntity);
-        validateOrderStatus(orders);
-        validateDryCleanerStatus(dryCleanerEntity);
-        orders.setDryCleaner(dryCleanerEntity);
-        orders.setOrderStatus(OrderStatus.SCHEDULED);
-        if (orders.getPickupAt() == null){
-            orders.setPickupAt(LocalDateTime.now().plusHours(24));
-        }
-        validateMissingService(orders, dryCleanerEntity);
-        orderEntityRepository.save(orders);
-        AcceptOrderResponse acceptOrderResponse = new AcceptOrderResponse();
-        acceptOrderResponse.setOrderId(orders.getId());
-        acceptOrderResponse.setStatus(ACCEPT_ORDER_SUCCESS_MESSAGE.getMessage());
-        acceptOrderResponse.setTimestamp(LocalDateTime.now());
-        return acceptOrderResponse;
-    }
-
-    private void validateMissingService(OrderEntity orders, DryCleanerEntity dryCleanerEntity) {
-        List<String> missingService = findMissingService(orders, dryCleanerEntity);
-        if (missingService.isEmpty())
-            throw new MissingServicesNotEmptyException(missingService);
-    }
-
-    private void validateDryCleanerStatus(DryCleanerEntity dryCleanerEntity) {
-        if (Boolean.FALSE.equals(dryCleanerEntity.isActive())){
-            throw new NoActiveDryCleanerException(dryCleanerEntity.getId());
-        }
-    }
-
-    private void validateOrderStatus(OrderEntity orders) {
-        if (orders.getOrderStatus() != OrderStatus.ACCEPTED && orders.getOrderStatus() != OrderStatus.PENDING_ACCEPTANCE){
-            throw new InvalidOrderAssignmentException("Order cannot be accepted in it's current status"+ orders.getOrderStatus());
-        }
-    }
-
-    private void validateDryCleanerAssignment(OrderEntity orders, DryCleanerEntity dryCleanerEntity) {
-        if (orders.getDryCleaner() == null || !orders.getDryCleaner().getId().equals(dryCleanerEntity.getId())){
-            throw new InvalidOrderAssignmentException("Order is not assign to this drycleaner");
-        }
-    }
-
-    private List<String> findMissingService(OrderEntity orders, DryCleanerEntity dryCleanerEntity) {
-        Set<String> availableService = dryCleanerEntity.getServiceOfferings() == null ? Collections.emptySet()
-                : dryCleanerEntity.getServiceOfferings().stream().map(ServiceOfferings::getName).collect(Collectors.toSet());
-        return orders.getOrderLines() == null ? Collections.emptyList()
-                : orders.getOrderLines().stream().map(OrderLine::getClothType)
-                .filter(line -> !availableService.contains(line))
-                .distinct()
-                .collect(Collectors.toList());
-    }
-
     private String generateOtp(int otpDigits) {
         StringBuilder stringBuilder = new StringBuilder();
         SecureRandom secureRandom = new SecureRandom();
@@ -150,7 +112,6 @@ public class DefaultDryCleanerService implements DryCleanerService {
         }
         return stringBuilder.toString();
     }
-
     private static DryCleanerEntity buildDryCleanerEntityInstance(DryCleanerRegistrationRequest dryCleanerRegistrationRequest) {
         DryCleanerEntity dryCleanerEntity = new DryCleanerEntity();
         dryCleanerEntity.setFirstName(dryCleanerRegistrationRequest.getFirstName());
@@ -169,6 +130,5 @@ public class DefaultDryCleanerService implements DryCleanerService {
     private void validateDryCleanerEmailExist(String email) {
         boolean isEmailExist = dryCleanerEntityRepository.existsByEmail(email);
         if (isEmailExist)throw new DryCleanerEmailAlreadyExistException("DryCleaner with this email already exists");
-
     }
 }

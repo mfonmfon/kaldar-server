@@ -10,13 +10,16 @@ public enum StatusResponse {
     EXPIRED_OTP_EXCEPTION_MESSAGE("OTP has expired"),
     INVALID_OTP_EXCEPTION("Invalid Otp"),
     VERIFICATION_OTP_SUCCESS_MESSAGE("Account verified successfully"),
+    RESEND_VERIFICATION_OTP_SUCCESS_MESSAGE("Successfully resent otp"),
     USER_ALREADY_VERIFIED_MESSAGE("User is already verified"),
     AUTHENTICATION_SUCCESS_MESSAGE("Login successfully"),
     ORDERS_NOT_FOUND_EXCEPTION_MESSAGE("Order not found "),
     DRY_CLEANER_NOT_FOUND_EXCEPTION_MESSAGE("Drycleaner not found"),
     NO_ITEMS_FOUND_EXCEPTION_MESSAGE("Service not found"),
     ACCEPT_ORDER_SUCCESS_MESSAGE("SUCCESS"),
-    CUSTOMER_PROFILE_UPDATE_STATUS_MESSAGE("SUCCESS");
+    CUSTOMER_PROFILE_UPDATE_STATUS_MESSAGE("SUCCESS"),
+    ORDER_CREATED_SUCCESS_MESSAGE("Order created"),
+    DRY_CLEANER_PROFILE_UPDATED_SUCCESS_MESSAGE("DryCleaner profile updated");
 
     private final    String message;
 

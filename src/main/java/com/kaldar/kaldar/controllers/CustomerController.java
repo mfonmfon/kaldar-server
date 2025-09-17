@@ -1,8 +1,10 @@
 package com.kaldar.kaldar.controllers;
 
+import com.kaldar.kaldar.dtos.request.ChangePasswordRequest;
 import com.kaldar.kaldar.dtos.request.CustomerRegistrationRequest;
 import com.kaldar.kaldar.dtos.request.UpdateCustomerProfileRequest;
 import com.kaldar.kaldar.dtos.response.ApiResponse;
+import com.kaldar.kaldar.dtos.response.ChangePasswordResponse;
 import com.kaldar.kaldar.dtos.response.CustomerProfileResponse;
 import com.kaldar.kaldar.dtos.response.CustomerRegistrationResponse;
 import com.kaldar.kaldar.kaldarService.interfaces.CustomerService;
@@ -48,8 +50,8 @@ public class CustomerController{
         return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
      }
 
-     @GetMapping("/{customer_id}")
-    public ResponseEntity<ApiResponse<CustomerProfileResponse>> getProfile(Long customerId){
+     @GetMapping("/{customerId}")
+    public ResponseEntity<ApiResponse<CustomerProfileResponse>> getProfile(@PathVariable Long customerId){
         CustomerProfileResponse customerProfileResponse = customerService.getCustomerProfile(customerId);
         ApiResponse<CustomerProfileResponse> apiResponse = ApiResponse.<CustomerProfileResponse>builder()
                 .isSuccess(true)
@@ -60,6 +62,16 @@ public class CustomerController{
         return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
      }
 
-
+     @PutMapping("/change_password")
+    public ResponseEntity<ApiResponse<ChangePasswordResponse>> changePassword(ChangePasswordRequest changePasswordRequest){
+        ChangePasswordResponse changePasswordResponse = customerService.changePassword(changePasswordRequest);
+        ApiResponse<ChangePasswordResponse> apiResponse = ApiResponse.<ChangePasswordResponse>builder()
+                .isSuccess(true)
+                .status(HttpStatus.OK.value())
+                .message("SUCCESS")
+                .data(changePasswordResponse)
+                .build();
+        return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
+     }
 
 }

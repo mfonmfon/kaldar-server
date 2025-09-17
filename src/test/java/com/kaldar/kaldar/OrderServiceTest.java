@@ -1,5 +1,7 @@
 package com.kaldar.kaldar;
 
+import com.kaldar.kaldar.dtos.request.AcceptOrderRequest;
+import com.kaldar.kaldar.dtos.request.AcceptOrderResponse;
 import com.kaldar.kaldar.dtos.request.CreateOrderRequest;
 import com.kaldar.kaldar.dtos.response.CreateOrderResponse;
 import com.kaldar.kaldar.kaldarService.interfaces.OrderService;
@@ -30,4 +32,15 @@ public class OrderServiceTest {
         CreateOrderResponse createOrderResponse = orderService.createOrder(createOrderRequest);
         assertThat(createOrderResponse).isNotNull();
     }
+
+    @Test
+    public void testThatDryCleanerCanAcceptOrders(){
+        Long orderId = 1L;
+        Long dryCleanerId = 1L;
+        AcceptOrderRequest acceptOrderRequest = new AcceptOrderRequest();
+        acceptOrderRequest.setOrderId(orderId);
+        acceptOrderRequest.setDryCleanerId(dryCleanerId);
+        AcceptOrderResponse acceptOrderResponse = orderService.acceptOrder(acceptOrderRequest);
+    }
+
 }

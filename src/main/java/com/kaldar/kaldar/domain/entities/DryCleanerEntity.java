@@ -3,6 +3,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotBlank;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -18,7 +19,25 @@ public class DryCleanerEntity extends UserEntity{
     @OneToMany(mappedBy = "dryCleaner")
     private List<ServiceOfferings> serviceOfferings;
     private boolean isActive;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 
     public @NotBlank(message = "Business name is required") String getBusinessName() {
         return businessName;

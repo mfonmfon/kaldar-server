@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
@@ -29,6 +30,7 @@ public class GlobalApplicationExceptionHandler {
     /**
      * Handle validation errors.
      */
+    @ResponseStatus
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiErrorResponse> handleValidationException(MethodArgumentNotValidException exception, HttpServletRequest request) {
         Map<String, String> fieldErrors = new HashMap<>();
@@ -46,6 +48,8 @@ public class GlobalApplicationExceptionHandler {
     /**
      * Handle user not found.
      */
+
+    @ResponseStatus
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleUserNotFoundException(UserNotFoundException exception,
             HttpServletRequest request) {
@@ -61,6 +65,7 @@ public class GlobalApplicationExceptionHandler {
     /**
      * Handle customer and drycleaner email conflicts.
      */
+    @ResponseStatus
     @ExceptionHandler({
             CustomerEmailAlreadyExist.class,
             DryCleanerEmailAlreadyExistException.class,
@@ -79,6 +84,7 @@ public class GlobalApplicationExceptionHandler {
     /**
      * Handle OTP-related exceptions.
      */
+    @ResponseStatus
     @ExceptionHandler({
             OTPNotFoundException.class,
             ExpiredOtpException.class,

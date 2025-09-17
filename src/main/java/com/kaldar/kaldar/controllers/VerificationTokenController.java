@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import static com.kaldar.kaldar.contants.StatusResponse.RESEND_VERIFICATION_OTP_SUCCESS_MESSAGE;
 import static com.kaldar.kaldar.contants.StatusResponse.VERIFICATION_OTP_SUCCESS_MESSAGE;
 
 @RestController
@@ -42,7 +44,7 @@ public class VerificationTokenController {
                 .status(HttpStatus.OK.value())
                 .data(verifyOtpResponse)
                 .isSuccess(true)
-                .message(VERIFICATION_OTP_SUCCESS_MESSAGE.getMessage())
+                .message(RESEND_VERIFICATION_OTP_SUCCESS_MESSAGE.getMessage())
                 .build();
         return ResponseEntity.ok().body(apiResponse);
     }

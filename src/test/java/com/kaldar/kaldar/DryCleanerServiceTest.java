@@ -1,23 +1,26 @@
 package com.kaldar.kaldar;
 
-import com.kaldar.kaldar.dtos.request.AcceptOrderRequest;
-import com.kaldar.kaldar.dtos.request.AcceptOrderResponse;
 import com.kaldar.kaldar.dtos.request.DryCleanerRegistrationRequest;
+import com.kaldar.kaldar.dtos.request.UpdateDryCleanerProfileRequest;
+import com.kaldar.kaldar.dtos.response.DryCleanerProfileResponse;
 import com.kaldar.kaldar.dtos.response.SendVerificationEmailResponse;
 import com.kaldar.kaldar.kaldarService.interfaces.DryCleanerService;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cglib.core.Local;
+
+import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 public class DryCleanerServiceTest {
 
-    private final DryCleanerService dryCleanerService;
+    @Autowired
+    private DryCleanerService dryCleanerService;
 
-    public DryCleanerServiceTest(DryCleanerService dryCleanerService) {
-        this.dryCleanerService = dryCleanerService;
-    }
+
 
     @Test
     public void testThatDryCleanerCanRegister(){
@@ -35,14 +38,20 @@ public class DryCleanerServiceTest {
     }
 
     @Test
-    public void testThatDryCleanerCanAcceptOrders(){
-        Long orderId = 1L;
+    public void testThatDryCleanerCanUpdate_profile(){
         Long dryCleanerId = 1L;
-        AcceptOrderRequest acceptOrderRequest = new AcceptOrderRequest();
-        acceptOrderRequest.setOrderId(orderId);
-        acceptOrderRequest.setDryCleanerId(dryCleanerId);
-//        acceptOrderRequest
-        AcceptOrderResponse acceptOrderResponse = dryCleanerService.acceptOrder(acceptOrderRequest);
+        LocalDateTime updatedAt = LocalDateTime.now();
+        UpdateDryCleanerProfileRequest updateDryCleanerProfileRequest = new UpdateDryCleanerProfileRequest();
+        updateDryCleanerProfileRequest.setDryCleanerId(dryCleanerId);
+        updateDryCleanerProfileRequest.setFirstName("Mfon");
+        updateDryCleanerProfileRequest.setLastName("Mfon");
+        updateDryCleanerProfileRequest.setBusinessName("MMPlus");
+        updateDryCleanerProfileRequest.setBusinessPhoneNumber("081475494");
+        updateDryCleanerProfileRequest.setShopAddress("Lagos, Nigeria");
+        updateDryCleanerProfileRequest.setUpdatedAt(updatedAt);
+        DryCleanerProfileResponse dryCleanerProfileResponse = dryCleanerService.editProfile(updateDryCleanerProfileRequest);
+        assertThat(dryCleanerProfileResponse).isNotNull();
     }
+
 
 }

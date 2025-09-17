@@ -4,6 +4,7 @@ public class AcceptOrderRequest {
     private Long orderId;
     private Long dryCleanerId;
 
+
     public Long getOrderId() {
         return orderId;
     }

@@ -6,7 +6,9 @@ import com.kaldar.kaldar.domain.repository.CustomerEntityRepository;
 import com.kaldar.kaldar.domain.repository.VerificationTokenRepository;
 import com.kaldar.kaldar.dtos.request.ChangePasswordRequest;
 import com.kaldar.kaldar.dtos.request.CustomerRegistrationRequest;
+import com.kaldar.kaldar.dtos.request.SendVerificationEmailRequest;
 import com.kaldar.kaldar.dtos.request.UpdateCustomerProfileRequest;
+import com.kaldar.kaldar.dtos.response.ChangePasswordResponse;
 import com.kaldar.kaldar.dtos.response.CustomerProfileResponse;
 import com.kaldar.kaldar.dtos.response.CustomerRegistrationResponse;
 import com.kaldar.kaldar.dtos.response.SendVerificationEmailResponse;
@@ -96,13 +98,16 @@ public class DefaultCustomerService implements CustomerService {
     }
 
     @Override
-    public void changePassword(ChangePasswordRequest changePasswordRequest) {
+    public ChangePasswordResponse changePassword(ChangePasswordRequest changePasswordRequest) {
         CustomerEntity customerEntity = customerEntityRepository.findById(changePasswordRequest.getCustomerId())
                 .orElseThrow(()-> new UserNotFoundException(CUSTOMER_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
         validateOldPasswordMatch(changePasswordRequest, customerEntity);
         validatePasswordNotBlank(changePasswordRequest);
         customerEntity.setPassword(passwordEncoder.encode(changePasswordRequest.getNewPassword()));
         customerEntityRepository.save(customerEntity);
+        ChangePasswordResponse changePasswordResponse = new ChangePasswordResponse();
+        changePasswordResponse.setStatusCode("SUCCESS");
+        return changePasswordResponse;
     }
 
     private static void validatePasswordNotBlank(ChangePasswordRequest changePasswordRequest) {

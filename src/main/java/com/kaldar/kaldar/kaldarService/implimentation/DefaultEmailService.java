@@ -1,5 +1,6 @@
 package com.kaldar.kaldar.kaldarService.implimentation;
 
+import com.kaldar.kaldar.dtos.request.SendVerificationEmailRequest;
 import com.kaldar.kaldar.dtos.response.SendVerificationEmailResponse;
 import com.kaldar.kaldar.exceptions.EmailSendException;
 import com.kaldar.kaldar.kaldarService.interfaces.EmailService;
@@ -29,23 +30,22 @@ public class DefaultEmailService implements EmailService {
     }
 
     @Override
-    public SendVerificationEmailResponse sendVerificationEmail(String recipientEmail, String otpDigitsNumbersGenerate) {
+    public SendVerificationEmailResponse sendVerificationEmail(String recipientEmail, String otpDigitNumberGenerator) {
         try {
             Email email = EmailBuilder.startingBlank()
                     .from(fromName, fromEmail)
                     .to(recipientEmail)
                     .withSubject(" Your Verification Code ")
-                    .withPlainText("Your verification code is: " + otpDigitsNumbersGenerate +
+                    .withPlainText("Your verification code is: " + otpDigitNumberGenerator +
                             "\n\nIt expires in " + otpExpiryMinutes + " minutes.")
                     .withHTMLText(
                             "<h2 style='color:#2c3e50;'>Verification Code</h2>" +
-                                    "<p>Your OTP is: <b style='font-size:18px;'>" + otpDigitsNumbersGenerate + "</b></p>" +
-                                    "<p>This code will expire in <b>" + otpExpiryMinutes + "</b> minutes.</p>")
+                                    "<p>Your OTP is: <b style='font-size:18px;'>" +
+                                    otpDigitNumberGenerator+ "</b></p>" + "<p>This code will expire in <b>" +
+                                    otpExpiryMinutes + "</b> minutes.</p>")
                     .buildEmail();
             mailer.sendMail(email);
-            return new SendVerificationEmailResponse(
-                    recipientEmail,
-                    otpDigitsNumbersGenerate,
+            return new SendVerificationEmailResponse(recipientEmail, otpDigitNumberGenerator,
                     "Verification code sent successfully"
             );
         } catch (Exception ex) {

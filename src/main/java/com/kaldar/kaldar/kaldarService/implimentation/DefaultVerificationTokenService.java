@@ -42,16 +42,21 @@ public class DefaultVerificationTokenService implements VerificationTokenService
                 .orElseThrow(()-> new UserNotFoundException(CUSTOMER_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
         VerificationToken verificationToken = verificationTokenRepository.findByUserEntityAndUsedAtIsNull(userEntity)
                 .orElseThrow(()-> new OTPNotFoundException(OTP_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
+
         if (userEntity.isVerifiedUser())
             throw new UserAlreadyVerifiedException(USER_ALREADY_VERIFIED_MESSAGE.getMessage());
-        if (verificationToken.getExpiredAt().isBefore(LocalDateTime.now()))
+        if (LocalDateTime.now().isAfter(verificationToken.getExpiredAt())) {
             throw new ExpiredOtpException(EXPIRED_OTP_EXCEPTION_MESSAGE.getMessage());
-        if (passwordEncoder.matches(verifyOtpRequest.getOtpInput(), verificationToken.getToken()))
+        }
+        if (!passwordEncoder.matches(verifyOtpRequest.getOtpInput(), verificationToken.getToken())) {
             throw new InvalidOtpException(INVALID_OTP_EXCEPTION.getMessage());
+        }
         userEntity.setVerifiedUser(true);
         userEntityRepository.save(userEntity);
+
         verificationToken.setUsedAt(LocalDateTime.now());
         verificationTokenRepository.save(verificationToken);
+
         VerifyOtpResponse verifyOtpResponse = buildOTPVerificationResponseInstance(userEntity);
         verifyOtpResponse.setOtpVerificationMessage(VERIFICATION_OTP_SUCCESS_MESSAGE.getMessage());
         return verifyOtpResponse;
@@ -72,7 +77,7 @@ public class DefaultVerificationTokenService implements VerificationTokenService
         VerifyOtpResponse verifyOtpResponse = new VerifyOtpResponse();
         verifyOtpResponse.setEmail(userEntity.getEmail());
         verifyOtpResponse.setVerifiedAt(verificationToken.getExpiredAt().toString());
-        verifyOtpResponse.setOtpVerificationMessage(VERIFICATION_OTP_SUCCESS_MESSAGE.getMessage());
+        verifyOtpResponse.setOtpVerificationMessage(RESEND_VERIFICATION_OTP_SUCCESS_MESSAGE.getMessage());
         return verifyOtpResponse;
     }
 
@@ -80,7 +85,7 @@ public class DefaultVerificationTokenService implements VerificationTokenService
         VerificationToken verificationToken = new VerificationToken();
         verificationToken.setToken(hashNewOtp);
         verificationToken.setUserEntity(userEntity);
-        verificationToken.setExpiredAt(LocalDateTime.now());
+        verificationToken.setExpiredAt(LocalDateTime.now().plusMinutes(1));
         return verificationToken;
     }
 
