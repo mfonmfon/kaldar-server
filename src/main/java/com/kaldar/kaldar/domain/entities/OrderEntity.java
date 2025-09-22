@@ -1,8 +1,10 @@
 package com.kaldar.kaldar.domain.entities;
 
+import com.kaldar.kaldar.contants.ClothType;
 import com.kaldar.kaldar.contants.OrderStatus;
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -18,26 +20,26 @@ public class OrderEntity {
     private CustomerEntity customer;
 
     @ManyToOne
-    @JoinColumn(name = "dry_cleaner_id", nullable = false)
+    @JoinColumn(name = "dry_cleaner_id")
     private DryCleanerEntity dryCleaner;
-
-    @ManyToOne
-    @JoinColumn(name = "order_id")
-    private OrderEntity orderEntity;
 
     private String pickupAddress;
     private String deliveryAddress;
+    @Enumerated(EnumType.STRING)
+    private ClothType clothType;
+    private String washingPreference;
 
     private LocalDateTime pickupAt; // scheduled time by customer
     private LocalDateTime deliveryAt;
 
-    private Double totalAmount;
+    private BigDecimal totalAmount;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderLine> orderLines;
+
 
     public Long getId() {
         return id;
@@ -59,24 +61,16 @@ public class OrderEntity {
         return customer;
     }
 
-    public void setCustomer(CustomerEntity customerEntity) {
-        this.customer = customerEntity;
+    public void setCustomer(CustomerEntity customer) {
+        this.customer = customer;
     }
 
     public DryCleanerEntity getDryCleaner() {
         return dryCleaner;
     }
 
-    public void setDryCleaner(DryCleanerEntity dryCleanerEntity) {
-        this.dryCleaner = dryCleanerEntity;
-    }
-
-    public OrderEntity getOrderEntity() {
-        return orderEntity;
-    }
-
-    public void setOrderEntity(OrderEntity orderEntity) {
-        this.orderEntity = orderEntity;
+    public void setDryCleaner(DryCleanerEntity dryCleaner) {
+        this.dryCleaner = dryCleaner;
     }
 
     public String getPickupAddress() {
@@ -95,6 +89,23 @@ public class OrderEntity {
         this.deliveryAddress = deliveryAddress;
     }
 
+    public ClothType getClothType() {
+        return clothType;
+    }
+
+    public void setClothType(ClothType clothType) {
+        this.clothType = clothType;
+    }
+
+    public String getWashingPreference() {
+
+        return washingPreference;
+    }
+
+    public void setWashingPreference(String washingPreference) {
+        this.washingPreference = washingPreference;
+    }
+
     public LocalDateTime getPickupAt() {
         return pickupAt;
     }
@@ -111,11 +122,11 @@ public class OrderEntity {
         this.deliveryAt = deliveryAt;
     }
 
-    public Double getTotalAmount() {
+    public BigDecimal getTotalAmount() {
         return totalAmount;
     }
 
-    public void setTotalAmount(Double totalAmount) {
+    public void setTotalAmount(BigDecimal totalAmount) {
         this.totalAmount = totalAmount;
     }
 

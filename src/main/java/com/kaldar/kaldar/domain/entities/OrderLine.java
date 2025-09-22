@@ -6,18 +6,17 @@ import java.math.BigDecimal;
 
 @Entity
 public class OrderLine {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToOne
     private OrderEntity order;
-    @ManyToOne
-    private ServiceOfferings serviceOfferings;
+
     private String clothType;
     private int quantity;
-    private Double lineTotal;
-
-
+    private BigDecimal unitPrice;
+    private BigDecimal lineTotal;
 
 
     public OrderEntity getOrder() {
@@ -52,19 +51,20 @@ public class OrderLine {
         this.quantity = quantity;
     }
 
-    public Double getLineTotal() {
+    public BigDecimal getUnitPrice() {
+        return unitPrice;
+    }
+
+    public void setUnitPrice(BigDecimal unitPrice) {
+        this.unitPrice = unitPrice;
+    }
+
+    public BigDecimal getLineTotal() {
         return lineTotal;
     }
 
-    public void setLineTotal(Double lineTotal) {
+    public void setLineTotal(BigDecimal lineTotal) {
         this.lineTotal = lineTotal;
     }
 
-    public ServiceOfferings getServiceOfferings() {
-        return serviceOfferings;
-    }
-
-    public void setServiceOfferings(ServiceOfferings serviceOfferings) {
-        this.serviceOfferings = serviceOfferings;
-    }
 }

@@ -1,8 +1,8 @@
 package com.kaldar.kaldar.domain.entities;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
-
 import java.util.List;
 
 @Entity
@@ -10,7 +10,7 @@ public class CustomerEntity extends UserEntity{
 
     private String defaultAddress;
 
-    @OneToMany(mappedBy = "")
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.PERSIST, orphanRemoval = true)
     private List<OrderEntity> orderEntityList;
 
     public List<OrderEntity> getOrderEntityList() {

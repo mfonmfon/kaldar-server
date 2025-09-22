@@ -9,10 +9,11 @@ public class CreateOrderResponse {
     private Long dryCleanerId;
     private String pickupAddress;
     private String deliveryAddress;
+    private String clothType;
     private double totalPrice;
     private String status;
     private LocalDateTime createdAt;
-    private List<OrderLineResponse> orderLines;
+
 
     public Long getOrderId() {
         return orderId;
@@ -42,6 +43,7 @@ public class CreateOrderResponse {
         return pickupAddress;
     }
 
+
     public void setPickupAddress(String pickupAddress) {
         this.pickupAddress = pickupAddress;
     }
@@ -52,6 +54,14 @@ public class CreateOrderResponse {
 
     public void setDeliveryAddress(String deliveryAddress) {
         this.deliveryAddress = deliveryAddress;
+    }
+
+    public String getClothType() {
+        return clothType;
+    }
+
+    public void setClothType(String clothType) {
+        this.clothType = clothType;
     }
 
     public double getTotalPrice() {
@@ -70,13 +80,6 @@ public class CreateOrderResponse {
         this.status = status;
     }
 
-    public List<OrderLineResponse> getOrderLines() {
-        return orderLines;
-    }
-
-    public void setOrderLines(List<OrderLineResponse> orderLines) {
-        this.orderLines = orderLines;
-    }
 
     public LocalDateTime getCreatedAt() {
         return createdAt;

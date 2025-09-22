@@ -4,4 +4,6 @@ import com.kaldar.kaldar.domain.entities.ServiceOfferings;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ServiceOfferingRepository extends JpaRepository<ServiceOfferings, Long> {
+    ServiceOfferings findByDryCleanerIdAndClothesType(Long dryCleanerId, String clothType);
+
 }

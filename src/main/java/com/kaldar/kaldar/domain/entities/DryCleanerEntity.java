@@ -1,4 +1,5 @@
 package com.kaldar.kaldar.domain.entities;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotBlank;
@@ -14,7 +15,7 @@ public class DryCleanerEntity extends UserEntity{
     @NotBlank(message = "Business address is required")
     private String businessAddress;
     private String workingHours;
-    @OneToMany(mappedBy = "dryCleaner")
+    @OneToMany(mappedBy = "dryCleaner", cascade = CascadeType.PERSIST, orphanRemoval = true)
     private List<OrderEntity> orderEntityList;
     @OneToMany(mappedBy = "dryCleaner")
     private List<ServiceOfferings> serviceOfferings;

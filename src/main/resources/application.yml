@@ -1,34 +1,35 @@
 server:
-  port: 8050
+  port: ${PORT:8050}
 spring:
   application:
     name: kaldar
   datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost/kaldar_db?createDatabaseIfNotExist=true
+    driver-class-name: org.postgresql.Driver
+    url: ${DATA_BASE_URL}
     hikari:
-      username: root
-      password: 122024Clux!
+      username: ${DATA_BASE_USERNAME:postgres}
+      password: ${DATA_BASE_PASSWORD:122024Clux!}
   jpa:
     hibernate:
       ddl-auto: update
-    database: mysql
-    database-platform: org.hibernate.dialect.MySQL8Dialect
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
 
   mail:
     host: smtp.gmail.com
-    port: 587
-    username: mfonm579@gmail.com
-    password: jcao vyuh xakf dume
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
     from-name: "Kaldar"
-    from-email: mfonm579@gmail.com
+    from-email: ${MAIL_USERNAME}
+  config:
+    import: classpath:secret.yml
 
 security:
   otp:
-    digit: 6
-    expiry-minutes: 1
+    digit: ${OTP_DIGIT:6}
+    expiry-minutes: ${OTP_EXPIRATION:1}
+
 jwt:
-  secret:
-    key: aa711f0400c0dc4e5d4f4ec5e9a79498d6b60a62b38edff3389239aec54f8706
-
-
+    secret:
+      key: ${JWT_SECRET_KEY}

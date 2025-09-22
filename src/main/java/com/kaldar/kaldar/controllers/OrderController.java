@@ -28,7 +28,7 @@ public class OrderController {
 
     @PostMapping("/creat-order")
     public ResponseEntity<ApiResponse<CreateOrderResponse>> createOrder(@RequestBody CreateOrderRequest createOrderRequest){
-        CreateOrderResponse createOrderResponse = orderService.createOrder(createOrderRequest);
+        CreateOrderResponse createOrderResponse = orderService.placeOrder(createOrderRequest);
         ApiResponse<CreateOrderResponse> apiResponse = ApiResponse.<CreateOrderResponse>builder()
                 .isSuccess(true)
                 .status(HttpStatus.CREATED.value())

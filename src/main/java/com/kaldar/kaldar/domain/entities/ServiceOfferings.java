@@ -2,18 +2,20 @@ package com.kaldar.kaldar.domain.entities;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
+
 @Entity
 public class ServiceOfferings {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String name;
-    private String description;
     private String clothesType;
-    private Integer unitPrice; //price per clothes or items
+    private BigDecimal unitPrice; //price per clothes or items
     @ManyToOne
     @JoinColumn(name = "dry_cleaner_id")
     private DryCleanerEntity dryCleaner;
+
+    private Boolean expressAvailable;
 
 
     public Long getId() {
@@ -22,22 +24,6 @@ public class ServiceOfferings {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     public String getClothesType() {
@@ -56,11 +42,19 @@ public class ServiceOfferings {
         this.dryCleaner = dryCleaner;
     }
 
-    public Integer getUnitPrice() {
+    public BigDecimal getUnitPrice() {
         return unitPrice;
     }
 
-    public void setUnitPrice(Integer unitPrice) {
+    public void setUnitPrice(BigDecimal unitPrice) {
         this.unitPrice = unitPrice;
+    }
+
+    public Boolean getExpressAvailable() {
+        return expressAvailable;
+    }
+
+    public void setExpressAvailable(Boolean expressAvailable) {
+        this.expressAvailable = expressAvailable;
     }
 }
