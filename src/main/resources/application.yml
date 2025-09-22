@@ -5,7 +5,7 @@ spring:
     name: kaldar
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: ${DATA_BASE_URL:jdbc:postgresql://localhost:5432/kaldar_db}
+    url: ${DATA_BASE_URL:jdbc:postgresql://${DATA_BASE_HOST}:${DATA_BASE_PORT}/${DATA_BASE_NAME}
     hikari:
       username: ${DATA_BASE_USERNAME:postgres}
       password: ${DATA_BASE_PASSWORD:122024Clux!}
