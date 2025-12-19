@@ -1,12 +1,11 @@
 package com.kaldar.kaldar.kaldarService.implimentation;
 import com.kaldar.kaldar.contants.Role;
-import com.kaldar.kaldar.domain.entities.CustomerEntity;
-import com.kaldar.kaldar.domain.entities.VerificationToken;
-import com.kaldar.kaldar.domain.repository.CustomerEntityRepository;
-import com.kaldar.kaldar.domain.repository.VerificationTokenRepository;
+import com.kaldar.kaldar.customermdoule.domain.model.CustomerEntity;
+import com.kaldar.kaldar.verificationmodule.domain.model.VerificationToken;
+import com.kaldar.kaldar.customermdoule.domain.repository.CustomerEntityRepository;
+import com.kaldar.kaldar.verificationmodule.domain.repository.VerificationTokenRepository;
 import com.kaldar.kaldar.dtos.request.ChangePasswordRequest;
 import com.kaldar.kaldar.dtos.request.CustomerRegistrationRequest;
-import com.kaldar.kaldar.dtos.request.SendVerificationEmailRequest;
 import com.kaldar.kaldar.dtos.request.UpdateCustomerProfileRequest;
 import com.kaldar.kaldar.dtos.response.ChangePasswordResponse;
 import com.kaldar.kaldar.dtos.response.CustomerProfileResponse;

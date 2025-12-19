@@ -1,6 +1,7 @@
 package com.kaldar.kaldar.domain.entities;
 
 import com.kaldar.kaldar.contants.OrderStatus;
+import com.kaldar.kaldar.customermdoule.domain.model.CustomerEntity;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -31,13 +32,13 @@ public class OrderEntity {
     private LocalDateTime pickupAt; // scheduled time by customer
     private LocalDateTime deliveryAt;
 
-    private Double totalAmount;
+    private BigDecimal totalAmount;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
-    private List<OrderServiceItem> orderServiceItems;
+    private List<OrderItem> orderItems;
 
 
     public Long getId() {
@@ -56,20 +57,20 @@ public class OrderEntity {
         this.customer = customer;
     }
 
-    public OrderStatus getOrderStatus() {
-        return orderStatus;
-    }
-
-    public void setOrderStatus(OrderStatus orderStatus) {
-        this.orderStatus = orderStatus;
-    }
-
     public DryCleanerEntity getDryCleaner() {
         return dryCleaner;
     }
 
     public void setDryCleaner(DryCleanerEntity dryCleaner) {
         this.dryCleaner = dryCleaner;
+    }
+
+    public OrderStatus getOrderStatus() {
+        return orderStatus;
+    }
+
+    public void setOrderStatus(OrderStatus orderStatus) {
+        this.orderStatus = orderStatus;
     }
 
     public String getPickupAddress() {
@@ -112,11 +113,11 @@ public class OrderEntity {
         this.deliveryAt = deliveryAt;
     }
 
-    public Double getTotalAmount() {
+    public BigDecimal getTotalAmount() {
         return totalAmount;
     }
 
-    public void setTotalAmount(Double totalAmount) {
+    public void setTotalAmount(BigDecimal totalAmount) {
         this.totalAmount = totalAmount;
     }
 
@@ -136,11 +137,11 @@ public class OrderEntity {
         this.updatedAt = updatedAt;
     }
 
-    public List<OrderServiceItem> getOrderServiceItems() {
-        return orderServiceItems;
+    public List<OrderItem> getOrderItems() {
+        return orderItems;
     }
 
-    public void setOrderServiceItems(List<OrderServiceItem> orderServiceItems) {
-        this.orderServiceItems = orderServiceItems;
+    public void setOrderItems(List<OrderItem> orderItems) {
+        this.orderItems = orderItems;
     }
 }

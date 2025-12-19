@@ -16,7 +16,7 @@ import static com.kaldar.kaldar.contants.StatusResponse.CUSTOMER_PROFILE_UPDATE_
 import static com.kaldar.kaldar.contants.StatusResponse.CUSTOMER_REGISTRATION_SUCCESS_MESSAGE;
 
 @RestController
-@RequestMapping("api/v1/auth/")
+@RequestMapping("api/v1/auth/customer")
 public class CustomerController{
 
     private final CustomerService customerService;
@@ -37,7 +37,7 @@ public class CustomerController{
         return ResponseEntity.status(HttpStatus.CREATED).body(apiResponse);
     }
 
-    @PutMapping("/updated_customer_profile")
+    @PutMapping("/updated-customer-profile")
     public ResponseEntity<ApiResponse<CustomerProfileResponse>> updateCustomerProfile(
             @RequestBody UpdateCustomerProfileRequest customerProfileRequest){
         CustomerProfileResponse customerProfileResponse = customerService.updateCustomerProfile(customerProfileRequest);
@@ -73,5 +73,4 @@ public class CustomerController{
                 .build();
         return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
      }
-
 }

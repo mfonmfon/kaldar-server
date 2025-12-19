@@ -1,12 +1,13 @@
-package com.kaldar.kaldar.domain.entities;
+package com.kaldar.kaldar.customermdoule.domain.model;
+import com.kaldar.kaldar.domain.entities.OrderEntity;
+import com.kaldar.kaldar.usermdoule.UserEntity;
 import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 import java.util.List;
 
 @Entity
-public class CustomerEntity extends UserEntity{
+public class CustomerEntity extends UserEntity {
 
     private String defaultAddress;
 

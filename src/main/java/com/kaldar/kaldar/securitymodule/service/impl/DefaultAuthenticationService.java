@@ -1,9 +1,10 @@
-package com.kaldar.kaldar.kaldarService.implimentation;
+package com.kaldar.kaldar.securitymodule.service.impl;
 
-import com.kaldar.kaldar.domain.entities.UserEntity;
+import com.kaldar.kaldar.usermdoule.UserEntity;
 import com.kaldar.kaldar.dtos.request.AuthenticationRequest;
 import com.kaldar.kaldar.dtos.response.AuthenticationResponse;
-import com.kaldar.kaldar.kaldarService.interfaces.AuthenticationService;
+import com.kaldar.kaldar.kaldarService.implimentation.JwtService;
+import com.kaldar.kaldar.securitymodule.service.interfaces.AuthenticationService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;

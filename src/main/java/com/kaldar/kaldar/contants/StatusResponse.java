@@ -19,7 +19,8 @@ public enum StatusResponse {
     ACCEPT_ORDER_SUCCESS_MESSAGE("SUCCESS"),
     CUSTOMER_PROFILE_UPDATE_STATUS_MESSAGE("SUCCESS"),
     ORDER_CREATED_SUCCESS_MESSAGE("Order created"),
-    DRY_CLEANER_PROFILE_UPDATED_SUCCESS_MESSAGE("DryCleaner profile updated");
+    DRY_CLEANER_PROFILE_UPDATED_SUCCESS_MESSAGE("DryCleaner profile updated"),
+    SERVICE_NOT_FOUND_EXCEPTION_MESSAGE("Service not found");
 
     private final    String message;
 

@@ -1,4 +1,4 @@
-package com.kaldar.kaldar.security;
+package com.kaldar.kaldar.securitymodule.jwt;
 
 import com.kaldar.kaldar.kaldarService.implimentation.JwtService;
 import jakarta.servlet.FilterChain;

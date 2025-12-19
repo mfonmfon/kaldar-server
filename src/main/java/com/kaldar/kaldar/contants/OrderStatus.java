@@ -1,12 +1,10 @@
 package com.kaldar.kaldar.contants;
 
 public enum OrderStatus {
-    PENDING_ACCEPTANCE,
+    PENDING,
     ACCEPTED,
     REJECTED,
-    SCHEDULED,
     PICKED,
-    CLEANING,
     READY,
     OUT_FOR_DELIVERY,
     DELIVERED,

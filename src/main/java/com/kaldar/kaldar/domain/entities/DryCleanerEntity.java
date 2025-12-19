@@ -1,4 +1,5 @@
 package com.kaldar.kaldar.domain.entities;
+import com.kaldar.kaldar.usermdoule.UserEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
@@ -9,7 +10,7 @@ import java.util.List;
 
 
 @Entity
-public class DryCleanerEntity extends UserEntity{
+public class DryCleanerEntity extends UserEntity {
 
     @NotBlank(message = "Business name is required")
     private String businessName;

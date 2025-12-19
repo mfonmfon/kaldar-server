@@ -3,7 +3,7 @@ package com.kaldar.kaldar.controllers;
 import com.kaldar.kaldar.dtos.request.AuthenticationRequest;
 import com.kaldar.kaldar.dtos.response.ApiResponse;
 import com.kaldar.kaldar.dtos.response.AuthenticationResponse;
-import com.kaldar.kaldar.kaldarService.interfaces.AuthenticationService;
+import com.kaldar.kaldar.securitymodule.service.interfaces.AuthenticationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

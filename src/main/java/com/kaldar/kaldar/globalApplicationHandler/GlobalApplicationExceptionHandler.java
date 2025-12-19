@@ -26,13 +26,13 @@ public class GlobalApplicationExceptionHandler {
                 LocalDateTime.now()
         );
     }
-
     /**
      * Handle validation errors.
      */
     @ResponseStatus
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiErrorResponse> handleValidationException(MethodArgumentNotValidException exception, HttpServletRequest request) {
+    public ResponseEntity<ApiErrorResponse> handleValidationException(MethodArgumentNotValidException exception,
+                                                                      HttpServletRequest request) {
         Map<String, String> fieldErrors = new HashMap<>();
         exception.getBindingResult().getFieldErrors()
                 .forEach(error -> fieldErrors.put(error.getField(), error.getDefaultMessage()));

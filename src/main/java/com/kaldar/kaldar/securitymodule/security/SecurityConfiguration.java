@@ -1,6 +1,6 @@
-package com.kaldar.kaldar.security;
+package com.kaldar.kaldar.securitymodule.security;
 
-import com.kaldar.kaldar.contants.Role;
+import com.kaldar.kaldar.securitymodule.jwt.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -24,6 +24,7 @@ public class SecurityConfiguration {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
+
     @Bean
     public SecurityFilterChain doSecurityFilterChain(HttpSecurity http) throws Exception{
         http
@@ -32,8 +33,11 @@ public class SecurityConfiguration {
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry -> authorizationManagerRequestMatcherRegistry
-                        //public auth route endpoint
+                        //public auth route endpoints
                         .requestMatchers("/api/v1/auth/**").permitAll()
+
+                        //protected routes
+
                         //customer route endpoints
                         .requestMatchers("/api/v1/customer/**").hasRole("CUSTOMER")
                         //dryCleaner route endpoints

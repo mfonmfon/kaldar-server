@@ -1,6 +1,5 @@
 package com.kaldar.kaldar.config;
-import com.kaldar.kaldar.domain.entities.UserEntity;
-import com.kaldar.kaldar.domain.repository.UserEntityRepository;
+import com.kaldar.kaldar.usermdoule.UserEntityRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;

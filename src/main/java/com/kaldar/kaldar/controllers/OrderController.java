@@ -37,7 +37,7 @@ public class OrderController {
                 .build();
         return ResponseEntity.status(HttpStatus.CREATED).body(apiResponse);
     }
-    @PostMapping
+    @PostMapping("/accept-order")
     public ResponseEntity<ApiResponse<AcceptOrderResponse>> acceptOrder(@RequestBody AcceptOrderRequest acceptOrderRequest){
         AcceptOrderResponse acceptOrderResponse = orderService.acceptOrder(acceptOrderRequest);
         ApiResponse<AcceptOrderResponse> apiResponse = ApiResponse.<AcceptOrderResponse>builder()

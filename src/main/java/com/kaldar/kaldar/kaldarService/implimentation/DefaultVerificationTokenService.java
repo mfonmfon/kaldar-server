@@ -1,9 +1,9 @@
 package com.kaldar.kaldar.kaldarService.implimentation;
 
-import com.kaldar.kaldar.domain.entities.UserEntity;
-import com.kaldar.kaldar.domain.entities.VerificationToken;
-import com.kaldar.kaldar.domain.repository.UserEntityRepository;
-import com.kaldar.kaldar.domain.repository.VerificationTokenRepository;
+import com.kaldar.kaldar.usermdoule.UserEntity;
+import com.kaldar.kaldar.verificationmodule.domain.model.VerificationToken;
+import com.kaldar.kaldar.usermdoule.UserEntityRepository;
+import com.kaldar.kaldar.verificationmodule.domain.repository.VerificationTokenRepository;
 import com.kaldar.kaldar.dtos.request.ResendOtpRequest;
 import com.kaldar.kaldar.dtos.request.VerifyOtpRequest;
 import com.kaldar.kaldar.dtos.response.VerifyOtpResponse;

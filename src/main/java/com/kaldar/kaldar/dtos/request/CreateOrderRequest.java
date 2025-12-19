@@ -1,5 +1,5 @@
 package com.kaldar.kaldar.dtos.request;
-import com.kaldar.kaldar.domain.entities.OrderServiceItem;
+import com.kaldar.kaldar.domain.entities.OrderItem;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -7,13 +7,11 @@ import java.util.List;
 public class CreateOrderRequest {
     private Long customerId;
     private Long dryCleanerId;
-
     private String pickupAddress;
     private String deliveryAddress;
-
     private String washingPreference;
     private LocalDateTime createdAt;
-    private List<OrderServiceItem> serviceItems;
+    private List<OrderItem> orderItems;
 
     public Long getDryCleanerId() {
         return dryCleanerId;
@@ -63,11 +61,11 @@ public class CreateOrderRequest {
         this.deliveryAddress = deliveryAddress;
     }
 
-    public List<OrderServiceItem> getServiceItems() {
-        return serviceItems;
+    public List<OrderItem> getOrderItems() {
+        return orderItems;
     }
 
-    public void setServiceItems(List<OrderServiceItem> serviceItems) {
-        this.serviceItems = serviceItems;
+    public void setOrderItems(List<OrderItem> orderItems) {
+        this.orderItems = orderItems;
     }
 }

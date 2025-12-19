@@ -1,17 +1,23 @@
 package com.kaldar.kaldar.domain.entities;
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+
 @Entity
-public class OrderServiceItem {
+public class OrderItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private OrderEntity order;
-//    private String clothType;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private ServiceOffering serviceOffering;
     private int quantity;
+    private BigDecimal unitPrice;
+    private BigDecimal totalPrice;
     private LocalDateTime createdAt;
+
 
     public Long getId() {
         return id;
@@ -29,12 +35,36 @@ public class OrderServiceItem {
         this.order = order;
     }
 
+    public ServiceOffering getServiceOffering() {
+        return serviceOffering;
+    }
+
+    public void setServiceOffering(ServiceOffering serviceOffering) {
+        this.serviceOffering = serviceOffering;
+    }
+
     public int getQuantity() {
         return quantity;
     }
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;
+    }
+
+    public BigDecimal getUnitPrice() {
+        return unitPrice;
+    }
+
+    public void setUnitPrice(BigDecimal unitPrice) {
+        this.unitPrice = unitPrice;
+    }
+
+    public BigDecimal getTotalPrice() {
+        return totalPrice;
+    }
+
+    public void setTotalPrice(BigDecimal totalPrice) {
+        this.totalPrice = totalPrice;
     }
 
     public LocalDateTime getCreatedAt() {

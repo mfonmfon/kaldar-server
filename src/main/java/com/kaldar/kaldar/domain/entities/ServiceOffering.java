@@ -9,16 +9,13 @@ public class ServiceOffering {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String serviceName;
-    private String description;
-    private Double unitPrice; //price per clothes or items
+    private String serviceType;
+    private String clothType;
+    private BigDecimal price;
     @ManyToOne
     @JoinColumn(name = "dry_cleaner_id")
     private DryCleanerEntity dryCleaner;
     private Boolean expressAvailable;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-    private Integer estimatedTime;
 
 
     public Long getId() {
@@ -29,28 +26,28 @@ public class ServiceOffering {
         this.id = id;
     }
 
-    public String getServiceName() {
-        return serviceName;
+    public String getServiceType() {
+        return serviceType;
     }
 
-    public void setServiceName(String serviceName) {
-        this.serviceName = serviceName;
+    public void setServiceType(String serviceType) {
+        this.serviceType = serviceType;
     }
 
-    public String getDescription() {
-        return description;
+    public String getClothType() {
+        return clothType;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setClothType(String clothType) {
+        this.clothType = clothType;
     }
 
-    public Double getUnitPrice() {
-        return unitPrice;
+    public BigDecimal getPrice() {
+        return price;
     }
 
-    public void setUnitPrice(Double unitPrice) {
-        this.unitPrice = unitPrice;
+    public void setPrice(BigDecimal price) {
+        this.price = price;
     }
 
     public DryCleanerEntity getDryCleaner() {
@@ -69,27 +66,4 @@ public class ServiceOffering {
         this.expressAvailable = expressAvailable;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public Integer getEstimatedTime() {
-        return estimatedTime;
-    }
-
-    public void setEstimatedTime(Integer estimatedTime) {
-        this.estimatedTime = estimatedTime;
-    }
 }

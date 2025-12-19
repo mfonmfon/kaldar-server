@@ -1,4 +1,4 @@
-package com.kaldar.kaldar.domain.entities;
+package com.kaldar.kaldar.usermdoule;
 import com.kaldar.kaldar.contants.Role;
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -27,9 +27,9 @@ public abstract class UserEntity implements UserDetails {
    private String phoneNumber;
     @Column(nullable = false)
    private String password;
-
     @Column(nullable = false)
     private boolean verifiedUser = false;
+    
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)

@@ -1,13 +1,10 @@
 package com.kaldar.kaldar.kaldarService.implimentation;
-import com.kaldar.kaldar.contants.OrderStatus;
 import com.kaldar.kaldar.contants.Role;
 import com.kaldar.kaldar.domain.entities.*;
-import com.kaldar.kaldar.domain.repository.CustomerEntityRepository;
+import com.kaldar.kaldar.customermdoule.domain.repository.CustomerEntityRepository;
 import com.kaldar.kaldar.domain.repository.DryCleanerEntityRepository;
 import com.kaldar.kaldar.domain.repository.OrderEntityRepository;
-import com.kaldar.kaldar.domain.repository.VerificationTokenRepository;
-import com.kaldar.kaldar.dtos.request.AcceptOrderRequest;
-import com.kaldar.kaldar.dtos.request.AcceptOrderResponse;
+import com.kaldar.kaldar.verificationmodule.domain.repository.VerificationTokenRepository;
 import com.kaldar.kaldar.dtos.request.DryCleanerRegistrationRequest;
 import com.kaldar.kaldar.dtos.request.UpdateDryCleanerProfileRequest;
 import com.kaldar.kaldar.dtos.response.DryCleanerProfileResponse;
@@ -15,16 +12,13 @@ import com.kaldar.kaldar.dtos.response.SendVerificationEmailResponse;
 import com.kaldar.kaldar.exceptions.*;
 import com.kaldar.kaldar.kaldarService.interfaces.DryCleanerService;
 import com.kaldar.kaldar.kaldarService.interfaces.EmailService;
+import com.kaldar.kaldar.verificationmodule.domain.model.VerificationToken;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import static com.kaldar.kaldar.contants.StatusResponse.*;
 

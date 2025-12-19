@@ -24,7 +24,7 @@ public class DryCleanerController {
         this.dryCleanerService = dryCleanerService;
     }
 
-    @PostMapping("/drycleaner/register")
+    @PostMapping("/dry-cleaner/register")
     public ResponseEntity<ApiResponse<SendVerificationEmailResponse>> register(
             @RequestBody @Valid DryCleanerRegistrationRequest dryCleanerRegistrationRequest){
         SendVerificationEmailResponse dryCleanerRegistrationResponse = dryCleanerService.registerDryCleaner(dryCleanerRegistrationRequest);
@@ -37,7 +37,7 @@ public class DryCleanerController {
         return ResponseEntity.status(HttpStatus.CREATED).body(apiResponse);
     }
 
-    @PatchMapping("/drycleaner/edit-profile")
+    @PatchMapping("/dry-cleaner/edit-profile")
     public ResponseEntity<ApiResponse<DryCleanerProfileResponse>> editProfile(@RequestBody @Valid UpdateDryCleanerProfileRequest dryCleanerProfileRequest){
         DryCleanerProfileResponse dryCleanerProfileResponse = dryCleanerService.editProfile(dryCleanerProfileRequest);
         ApiResponse<DryCleanerProfileResponse> apiResponse = ApiResponse.<DryCleanerProfileResponse>builder()

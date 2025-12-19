@@ -1,5 +1,6 @@
 package com.kaldar.kaldar.domain.entities;
 
+import com.kaldar.kaldar.usermdoule.UserEntity;
 import jakarta.persistence.Entity;
 
 @Entity

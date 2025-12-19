@@ -1,5 +1,5 @@
-package com.kaldar.kaldar.domain.entities;
-
+package com.kaldar.kaldar.verificationmodule.domain.model;
+import com.kaldar.kaldar.usermdoule.UserEntity;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
