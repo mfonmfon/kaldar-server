@@ -1,0 +1,70 @@
+package com.kaldar.kaldar.shared.api;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import java.time.LocalDateTime;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class ApiResponseWrapper<T> {
+    private boolean success;
+    private String message;
+    private T data;
+    private LocalDateTime timestamp;
+
+    public ApiResponseWrapper() {
+        this.timestamp = LocalDateTime.now();
+    }
+
+    public static <T> ApiResponseWrapper<T> success(T data) {
+        ApiResponseWrapper<T> response = new ApiResponseWrapper<>();
+        response.setSuccess(true);
+        response.setData(data);
+        return response;
+    }
+
+    public static <T> ApiResponseWrapper<T> success(String message, T data) {
+        ApiResponseWrapper<T> response = new ApiResponseWrapper<>();
+        response.setSuccess(true);
+        response.setMessage(message);
+        response.setData(data);
+        return response;
+    }
+
+    public static <T> ApiResponseWrapper<T> error(String message) {
+        ApiResponseWrapper<T> response = new ApiResponseWrapper<>();
+        response.setSuccess(false);
+        response.setMessage(message);
+        return response;
+    }
+
+    public boolean isSuccess() {
+        return success;
+    }
+
+    public void setSuccess(boolean success) {
+        this.success = success;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public T getData() {
+        return data;
+    }
+
+    public void setData(T data) {
+        this.data = data;
+    }
+
+    public LocalDateTime getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(LocalDateTime timestamp) {
+        this.timestamp = timestamp;
+    }
+}

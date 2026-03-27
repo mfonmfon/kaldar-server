@@ -1,18 +1,16 @@
 package com.kaldar.kaldar;
 
-import com.kaldar.kaldar.contants.ClothType;
-import com.kaldar.kaldar.contants.OrderStatus;
 import com.kaldar.kaldar.dtos.request.AcceptOrderRequest;
 import com.kaldar.kaldar.dtos.request.AcceptOrderResponse;
 import com.kaldar.kaldar.dtos.request.CreateOrderRequest;
 import com.kaldar.kaldar.dtos.response.CreateOrderResponse;
-import com.kaldar.kaldar.dtos.response.OrderTotalSummaryResponse;
 import com.kaldar.kaldar.kaldarService.interfaces.OrderService;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static com.kaldar.kaldar.contants.OrderStatus.ACCEPTED;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,6 +37,7 @@ public class OrderServiceTest {
         createOrderRequest.setDeliveryAddress("Ikate, Lagos, Nigeria");
         createOrderRequest.setWashingPreference("For the shirt please dont use detergent");
         createOrderRequest.setCreatedAt(LocalDateTime.now());
+        createOrderRequest.setServiceItems(List.of());
         return createOrderRequest;
     }
 
