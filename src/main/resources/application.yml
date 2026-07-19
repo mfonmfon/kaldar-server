@@ -23,6 +23,13 @@ spring:
     from-email: ${MAIL_USERNAME}
   config:
     import: classpath:secret.yml
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+cloudinary:
+  url: ${CLOUDINARY_URL:cloudinary://key:secret@cloud}
 
 security:
   otp:
@@ -31,3 +38,13 @@ security:
 jwt:
     secret:
       key: ${JWT_SECRET_KEY}
+
+logistics:
+  active-provider: ${LOGISTICS_PROVIDER:MOCK}
+  chowdeck:
+    api-key: ${CHOWDECK_API_KEY:}
+    base-url: ${CHOWDECK_BASE_URL:https://api.chowdeck.com/relay}
+    webhook-secret: ${CHOWDECK_WEBHOOK_SECRET:}
+  uber:
+    client-id: ${UBER_CLIENT_ID:}
+    client-secret: ${UBER_CLIENT_SECRET:}

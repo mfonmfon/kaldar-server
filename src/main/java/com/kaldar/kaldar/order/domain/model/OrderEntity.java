@@ -41,6 +41,8 @@ public class OrderEntity {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    private String rejectionReason;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderServiceItem> orderServiceItems;
 
@@ -155,5 +157,13 @@ public class OrderEntity {
 
     public void setVersion(Long version) {
         this.version = version;
+    }
+
+    public String getRejectionReason() {
+        return rejectionReason;
+    }
+
+    public void setRejectionReason(String rejectionReason) {
+        this.rejectionReason = rejectionReason;
     }
 }

@@ -1,0 +1,113 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------------------< com.kaldar:kaldar >--------------------------
+[INFO] Building kaldar 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ kaldar ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 3 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ kaldar ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ kaldar ---
+[INFO] skip non existing resourceDirectory C:\Projects\KaldarHq\kaldar-server\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ kaldar ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ kaldar ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.kaldar.kaldar.BusinessVerificationServiceUnitTest
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\DELL\.m2\repository\net\bytebuddy\byte-buddy-agent\1.17.7\byte-buddy-agent-1.17.7.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+Java HotSpot(TM) 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.974 s -- in com.kaldar.kaldar.BusinessVerificationServiceUnitTest
+[INFO] Running com.kaldar.kaldar.CustomerServiceUnitTest
+[ERROR] Tests run: 2, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.740 s <<< FAILURE! -- in com.kaldar.kaldar.CustomerServiceUnitTest
+[ERROR] com.kaldar.kaldar.CustomerServiceUnitTest.testRegisterCustomer -- Time elapsed: 0.029 s <<< ERROR!
+java.lang.Error: 
+Unresolved compilation problem: 
+	The constructor SendVerificationEmailResponse() is undefined
+
+	at com.kaldar.kaldar.CustomerServiceUnitTest.testRegisterCustomer(CustomerServiceUnitTest.java:57)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
+[INFO] Running com.kaldar.kaldar.DryCleanerServiceUnitTest
+[ERROR] Tests run: 2, Failures: 0, Errors: 2, Skipped: 0, Time elapsed: 0.463 s <<< FAILURE! -- in com.kaldar.kaldar.DryCleanerServiceUnitTest
+[ERROR] com.kaldar.kaldar.DryCleanerServiceUnitTest.testGetOnboardingStatus -- Time elapsed: 0.424 s <<< ERROR!
+java.lang.Error: 
+Unresolved compilation problems: 
+	The blank final field orderEntityRepository may not have been initialized
+	The method map(Function<? super OrderEntity,? extends R>) in the type Stream<OrderEntity> is not applicable for the arguments (com.kaldar.kaldar.order.domain.model.OrderEntity::getTotalCost)
+	The type OrderEntity does not define getTotalCost(OrderEntity) that is applicable here
+
+	at com.kaldar.kaldar.drycleaner.application.service.impl.DefaultDryCleanerService.<init>(DefaultDryCleanerService.java:55)
+	at com.kaldar.kaldar.DryCleanerServiceUnitTest.setUp(DryCleanerServiceUnitTest.java:51)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
+[ERROR] com.kaldar.kaldar.DryCleanerServiceUnitTest.testGetAnalytics -- Time elapsed: 0.016 s <<< ERROR!
+java.lang.Error: 
+Unresolved compilation problems: 
+	The blank final field orderEntityRepository may not have been initialized
+	The method map(Function<? super OrderEntity,? extends R>) in the type Stream<OrderEntity> is not applicable for the arguments (com.kaldar.kaldar.order.domain.model.OrderEntity::getTotalCost)
+	The type OrderEntity does not define getTotalCost(OrderEntity) that is applicable here
+
+	at com.kaldar.kaldar.drycleaner.application.service.impl.DefaultDryCleanerService.<init>(DefaultDryCleanerService.java:55)
+	at com.kaldar.kaldar.DryCleanerServiceUnitTest.setUp(DryCleanerServiceUnitTest.java:51)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
+[INFO] Running com.kaldar.kaldar.OrderServiceUnitTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.488 s -- in com.kaldar.kaldar.OrderServiceUnitTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[ERROR] Errors: 
+[ERROR]   CustomerServiceUnitTest.testRegisterCustomer:57  Unresolved compilation problem: 
+	The constructor SendVerificationEmailResponse() is undefined
+
+[ERROR]   DryCleanerServiceUnitTest.setUp:51 »  Unresolved compilation problems: 
+	The blank final field orderEntityRepository may not have been initialized
+	The method map(Function<? super OrderEntity,? extends R>) in the type Stream<OrderEntity> is not applicable for the arguments (com.kaldar.kaldar.order.domain.model.OrderEntity::getTotalCost)
+	The type OrderEntity does not define getTotalCost(OrderEntity) that is applicable here
+
+[ERROR]   DryCleanerServiceUnitTest.setUp:51 »  Unresolved compilation problems: 
+	The blank final field orderEntityRepository may not have been initialized
+	The method map(Function<? super OrderEntity,? extends R>) in the type Stream<OrderEntity> is not applicable for the arguments (com.kaldar.kaldar.order.domain.model.OrderEntity::getTotalCost)
+	The type OrderEntity does not define getTotalCost(OrderEntity) that is applicable here
+
+[INFO] 
+[ERROR] Tests run: 8, Failures: 0, Errors: 3, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  12.488 s
+[INFO] Finished at: 2026-05-15T19:08:25+01:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.3:test (default-test) on project kaldar: 
+[ERROR] 
+[ERROR] See C:\Projects\KaldarHq\kaldar-server\target\surefire-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

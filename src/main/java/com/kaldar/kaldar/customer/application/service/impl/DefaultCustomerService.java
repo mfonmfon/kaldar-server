@@ -54,7 +54,6 @@ public class DefaultCustomerService implements CustomerService {
         this.otpExpiryMinutes = otpExpiryMinutes;
     }
 
-
     @Override
     public CustomerRegistrationResponse registerCustomer(CustomerRegistrationRequest customerRegistrationRequest) {
         validateCustomerEmailExist(customerRegistrationRequest.getEmail());

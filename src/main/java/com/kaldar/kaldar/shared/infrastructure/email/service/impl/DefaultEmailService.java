@@ -54,9 +54,7 @@ public class DefaultEmailService implements EmailService {
                                     otpExpiryMinutes + "</b> minutes.</p>")
                     .buildEmail();
             mailer.sendMail(email);
-            return new SendVerificationEmailResponse(recipientEmail, otpDigitNumberGenerator,
-                    "Verification code sent successfully"
-            );
+            return new SendVerificationEmailResponse(recipientEmail, "Verification code sent successfully", java.time.LocalDateTime.now().plusMinutes(otpExpiryMinutes).toString());
         } catch (Exception ex) {
             throw new EmailSendException(ex.getMessage());
         }

@@ -111,12 +111,14 @@ public abstract class UserEntity implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return verifiedUser;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + roles));
+        return roles.stream()
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
+                .collect(java.util.stream.Collectors.toList());
     }
 
     @Override

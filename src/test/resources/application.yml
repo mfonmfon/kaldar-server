@@ -1,0 +1,55 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:kaldartest;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.H2Dialect
+    show-sql: false
+  mail:
+    host: localhost
+    port: 25
+    username: test@test.com
+    password: testpassword
+    from-name: "Kaldar Test"
+    from-email: test@test.com
+  config:
+    import: optional:classpath:secret-test.yml
+
+cloudinary:
+  url: cloudinary://key:secret@cloud
+
+security:
+  otp:
+    digit: 6
+    expiry-minutes: 15
+
+jwt:
+  secret:
+    key: testSecretKeyForJWTGenerationInTestsAtLeast256BitsLong1234567890abcdef
+
+app:
+  password-reset:
+    base-url: http://localhost:8080/reset-password.html
+    confirmation-url: http://localhost:8080/reset-confirmation.html
+
+security:
+  password-reset:
+    expiry-minutes: 15
+  otp:
+    digit: 6
+    expiry-minutes: 15
+
+logistics:
+  active-provider: MOCK
+  chowdeck:
+    api-key: 
+    base-url: https://api.chowdeck.com/relay
+    webhook-secret: 
+  uber:
+    client-id: 
+    client-secret: 
+

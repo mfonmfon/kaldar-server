@@ -28,6 +28,13 @@ public class DefaultAuthenticationService implements AuthenticationService {
         String jwtToken = jwtService.generateToken(userEntity);
         AuthenticationResponse authenticationResponse = new AuthenticationResponse();
         authenticationResponse.setAccessToken(jwtToken);
+        authenticationResponse.setId(userEntity.getId());
+        authenticationResponse.setEmail(userEntity.getEmail());
+        authenticationResponse.setFirstName(userEntity.getFirstName());
+        authenticationResponse.setLastName(userEntity.getLastName());
+        authenticationResponse.setRoles(userEntity.getRoles().stream()
+                .map(Enum::name)
+                .collect(java.util.stream.Collectors.toSet()));
         return authenticationResponse;
     }
 

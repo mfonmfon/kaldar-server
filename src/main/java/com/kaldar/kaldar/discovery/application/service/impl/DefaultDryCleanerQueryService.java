@@ -6,6 +6,7 @@ import com.kaldar.kaldar.drycleaner.domain.repository.DryCleanerEntityRepository
 import com.kaldar.kaldar.discovery.application.dto.request.FindAvailableDrycleanersRequest;
 import com.kaldar.kaldar.discovery.application.dto.response.AvailableDryCleanerResponse;
 import com.kaldar.kaldar.discovery.application.service.DryCleanerQueryService;
+import com.kaldar.kaldar.shared.domain.exceptions.WorkingHourExceptionMessage;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -47,6 +48,7 @@ public class DefaultDryCleanerQueryService implements DryCleanerQueryService {
                 .collect(Collectors.toList());
 
         if (services != null && !services.isEmpty()) {
+
             withinRadius = withinRadius.stream().filter(dc -> {
                 List<String> names = dc.getServiceOfferings() == null ? List.of() :
                         dc.getServiceOfferings().stream().map(ServiceOffering::getServiceName)
@@ -58,7 +60,6 @@ public class DefaultDryCleanerQueryService implements DryCleanerQueryService {
                 return true;
             }).collect(Collectors.toList());
         }
-
         if (Boolean.TRUE.equals(openNow)) {
             // TODO: implement working hours check
         }
@@ -81,7 +82,8 @@ public class DefaultDryCleanerQueryService implements DryCleanerQueryService {
             }
             mapped.add(res);
         }
-        mapped.sort((a, b) -> Double.compare(a.getDistanceKm(), b.getDistanceKm()));
+        mapped.sort((a, b) ->
+                Double.compare(a.getDistanceKm(), b.getDistanceKm()));
 
         return new PageImpl<>(mapped, pageable, mapped.size());
     }

@@ -5,6 +5,7 @@ public class SendVerificationEmailResponse {
     private String verificationMessage;
     private String expiresAt;
 
+    public SendVerificationEmailResponse() {}
 
     public SendVerificationEmailResponse(String email, String verificationMessage, String expiresAt) {
         this.email = email;

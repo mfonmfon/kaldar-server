@@ -25,15 +25,18 @@ public class DefaultVerificationTokenService implements VerificationTokenService
     private final PasswordEncoder passwordEncoder;
     private final UserEntityRepository userEntityRepository;
     private final EmailService emailService;
+    private final int otpExpiryMinutes;
 
     public DefaultVerificationTokenService(VerificationTokenRepository verificationTokenRepository,
                                            PasswordEncoder passwordEncoder,
                                            UserEntityRepository userEntityRepository,
-                                           EmailService emailService) {
+                                           EmailService emailService,
+                                           @org.springframework.beans.factory.annotation.Value("${security.otp.expiry-minutes:15}") int otpExpiryMinutes) {
         this.verificationTokenRepository = verificationTokenRepository;
         this.passwordEncoder = passwordEncoder;
         this.userEntityRepository = userEntityRepository;
         this.emailService = emailService;
+        this.otpExpiryMinutes = otpExpiryMinutes;
     }
 
     @Override
@@ -81,11 +84,11 @@ public class DefaultVerificationTokenService implements VerificationTokenService
         return verifyOtpResponse;
     }
 
-    private static @NotNull VerificationToken buildVerificationTokenInstance(String hashNewOtp, UserEntity userEntity) {
+    private @NotNull VerificationToken buildVerificationTokenInstance(String hashNewOtp, UserEntity userEntity) {
         VerificationToken verificationToken = new VerificationToken();
         verificationToken.setToken(hashNewOtp);
         verificationToken.setUserEntity(userEntity);
-        verificationToken.setExpiredAt(LocalDateTime.now().plusMinutes(1));
+        verificationToken.setExpiredAt(LocalDateTime.now().plusMinutes(otpExpiryMinutes));
         return verificationToken;
     }
 

@@ -7,8 +7,12 @@ WORKDIR /app
 COPY pom.xml .
 RUN mvn dependency:go-offline
 
-# Copy source code and build the project
+# Copy source code
 COPY src ./src
+
+# Ensure a secret.yml placeholder exists so packaging doesn't fail if ignored by git
+RUN mkdir -p src/main/resources && touch src/main/resources/secret.yml
+
 RUN mvn clean package -DskipTests
 
 # Runtime stage using slim OpenJDK image

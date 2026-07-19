@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Secrets - Never commit credentials ###
+src/main/resources/secret.yml
+src/test/resources/secret-test.yml

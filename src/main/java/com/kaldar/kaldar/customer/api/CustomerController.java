@@ -16,7 +16,7 @@ import static com.kaldar.kaldar.shared.domain.constants.StatusResponse.CUSTOMER_
 import static com.kaldar.kaldar.shared.domain.constants.StatusResponse.CUSTOMER_REGISTRATION_SUCCESS_MESSAGE;
 
 @RestController
-@RequestMapping("api/v1/auth/")
+@RequestMapping("/api/v1/customer")
 public class CustomerController{
 
     private final CustomerService customerService;

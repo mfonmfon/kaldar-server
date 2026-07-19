@@ -16,7 +16,7 @@ import com.kaldar.kaldar.order.application.dto.request.CreateOrderRequest;
 import com.kaldar.kaldar.order.application.dto.request.OrderItemRequest;
 import com.kaldar.kaldar.order.application.dto.request.UpdateOrderStatusRequest;
 import com.kaldar.kaldar.order.application.dto.response.CreateOrderResponse;
-import com.kaldar.kaldar.order.application.dto.response.UpdateOrderStatusResponse;
+import com.kaldar.kaldar.order.application.dto.response.*;
 import com.kaldar.kaldar.shared.domain.exceptions.*;
 import com.kaldar.kaldar.order.application.service.OrderService;
 import org.slf4j.Logger;
@@ -59,17 +59,20 @@ public class DefaultOrderService implements OrderService {
     private final OrderEntityRepository orderEntityRepository;
     private final OrderServiceItemRepository orderServiceItemRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final com.kaldar.kaldar.order.domain.repository.ReviewRepository reviewRepository;
 
     public DefaultOrderService(CustomerEntityRepository customerEntityRepository,
                                DryCleanerEntityRepository dryCleanerEntityRepository,
                                ServiceOfferingRepository serviceOfferingRepository,
-                               OrderEntityRepository orderEntityRepository, OrderServiceItemRepository orderServiceItemRepository, ApplicationEventPublisher applicationEventPublisher) {
+                               OrderEntityRepository orderEntityRepository, OrderServiceItemRepository orderServiceItemRepository, ApplicationEventPublisher applicationEventPublisher,
+                               com.kaldar.kaldar.order.domain.repository.ReviewRepository reviewRepository) {
         this.customerEntityRepository = customerEntityRepository;
         this.dryCleanerEntityRepository = dryCleanerEntityRepository;
         this.serviceOfferingRepository = serviceOfferingRepository;
         this.orderEntityRepository = orderEntityRepository;
         this.orderServiceItemRepository = orderServiceItemRepository;
         this.applicationEventPublisher = applicationEventPublisher;
+        this.reviewRepository = reviewRepository;
     }
 
     @Transactional
@@ -84,17 +87,20 @@ public class DefaultOrderService implements OrderService {
         }
         if (order.getOrderStatus() != OrderStatus.PENDING_ACCEPTANCE)
             throw new InvalidOrderAssignmentException("Order cannot be accepted");
-        if (Boolean.FALSE.equals(dryCleaner.isActive()))
+        if (!dryCleaner.isActive())
             throw new NoActiveDryCleanerException(dryCleaner.getId());
         List<String> missingService = findMissingService(order,dryCleaner);
         if (!missingService.isEmpty()){
             throw new MissingServicesNotEmptyException("Missing Service" + String.join(" ", missingService));
         }
-        if (order.getPickupAt() == null)
-            order.setOrderStatus(OrderStatus.ACCEPTED);
-        order.setPickupAt(LocalDateTime.now().plusHours(24));
-       OrderEntity orderEntity= orderEntityRepository.save(order);
-//       applicationEventPublisher.publishEvent(new OrderAcceptedEvent);
+        if (acceptOrderRequest.getPickupAt() != null) {
+            order.setPickupAt(acceptOrderRequest.getPickupAt());
+        } else if (order.getPickupAt() == null) {
+            order.setPickupAt(LocalDateTime.now().plusHours(24));
+        }
+        order.setOrderStatus(OrderStatus.ACCEPTED);
+        OrderEntity orderEntity = orderEntityRepository.save(order);
+        applicationEventPublisher.publishEvent(new com.kaldar.kaldar.order.application.event.OrderAcceptedEvent(this, order.getId()));
         AcceptOrderResponse acceptOrderResponse = new AcceptOrderResponse();
         acceptOrderResponse.setOrderId(order.getId());
         acceptOrderResponse.setStatus("ACCEPTED");
@@ -106,18 +112,13 @@ public class DefaultOrderService implements OrderService {
     @Transactional
     public CreateOrderResponse placeOrder(CreateOrderRequest createOrderRequest) {
         validateCreateOrderRequest(createOrderRequest);
-
         CustomerEntity customer = customerEntityRepository.findById(createOrderRequest.getCustomerId())
                 .orElseThrow(() -> new UserNotFoundException(CUSTOMER_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
-
         DryCleanerEntity dryCleaner = resolveDryCleaner(createOrderRequest.getDryCleanerId());
-
         OrderEntity order = buildOrder(createOrderRequest, customer, dryCleaner);
         List<OrderServiceItem> orderItems = buildOrderServiceItems(createOrderRequest.getServiceItems(), order);
         order.setOrderServiceItems(orderItems);
-
         order.setTotalAmount(calculateTotalAmount(orderItems));
-
         OrderEntity savedOrder = orderEntityRepository.save(order);
         return mapToCreateOrderResponse(savedOrder);
     }
@@ -127,10 +128,8 @@ public class DefaultOrderService implements OrderService {
     public UpdateOrderStatusResponse updateOrderStatus(UpdateOrderStatusRequest request) {
         OrderEntity order = orderEntityRepository.findById(request.getOrderId())
                 .orElseThrow(() -> new OrdersNotFoundException(ORDERS_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
-
         OrderStatus from = order.getOrderStatus();
         OrderStatus to = request.getStatus();
-
         if (from == null) {
             // initialize if missing
             from = OrderStatus.CREATED;
@@ -138,11 +137,9 @@ public class DefaultOrderService implements OrderService {
         if (!isTransitionAllowed(from, to)) {
             throw new InvalidOrderAssignmentException("Transition not allowed: " + from + " -> " + to);
         }
-
         order.setOrderStatus(to);
         order.setUpdatedAt(LocalDateTime.now());
         orderEntityRepository.save(order);
-
         UpdateOrderStatusResponse resp = new UpdateOrderStatusResponse();
         resp.setOrderId(order.getId());
         resp.setStatus(order.getOrderStatus());
@@ -273,50 +270,109 @@ public class DefaultOrderService implements OrderService {
         return createOrderResponse;
     }
 
-//    @Transactional
-//    @Override
-//    public CreateOrderResponse placeOrder(CreateOrderRequest createOrderRequest) {
-//        CustomerEntity customer = customerEntityRepository.findById(createOrderRequest.getCustomerId())
-//                .orElseThrow(()-> new UserNotFoundException(CUSTOMER_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
-//        DryCleanerEntity dryCleaner = dryCleanerEntityRepository.findById(createOrderRequest.getDryCleanerId())
-//                .orElseThrow(()-> new UserNotFoundException(DRY_CLEANER_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
-//        OrderEntity order = new OrderEntity();
-//        order.setCustomer(customer);
-//        order.setDryCleaner(dryCleaner);
-//        order.setPickupAddress(createOrderRequest.getPickupAddress());
-//        order.setDeliveryAddress(createOrderRequest.getDeliveryAddress());
-//        order.setWashingPreference(createOrderRequest.getWashingPreference());
-//        order.setOrderStatus(OrderStatus.CREATED);
-//        order.setCreatedAt(createOrderRequest.getCreatedAt());
-//        order = orderEntityRepository.save(order);
-//        double total = 0.0;
-//        for (OrderServiceItem orderServiceItem : createOrderRequest.getServiceItems()){
-//            ServiceOffering serviceOffering = serviceOfferingRepository.findById(orderServiceItem.getServiceOffering().getId())
-//                    .orElseThrow(()-> new ServicesNotFoundException("Service not found"));
-//            OrderServiceItem serviceItem = new OrderServiceItem();
-//            serviceItem.setOrder(order);
-//            serviceItem.setServiceOffering(serviceOffering);
-//            serviceItem.setQuantity(orderServiceItem.getQuantity());
-//            serviceItem.setPriceSnapshot(orderServiceItem.getPriceSnapshot());
-//            order.getOrderServiceItems().add(serviceItem);
-//            orderServiceItemRepository.save(serviceItem);
-//            total += serviceOffering.getUnitPrice() * orderServiceItem.getQuantity();
-//        }
-//        order.setTotalAmount(total);
-//        return mapToCreateOrderResponse(order);
-//    }
-//
-//    private static @NotNull CreateOrderResponse mapToCreateOrderResponse(OrderEntity order) {
-//        CreateOrderResponse createOrderResponse = new CreateOrderResponse();
-//        createOrderResponse.setCustomerId(order.getCustomer().getId());
-//        createOrderResponse.setDryCleanerId(order.getDryCleaner().getId());
-//        createOrderResponse.setPickupAddress(order.getPickupAddress());
-//        createOrderResponse.setDeliveryAddress(order.getDeliveryAddress());
-//        createOrderResponse.setTotalPrice(order.getTotalAmount());
-//        createOrderResponse.setCreatedAt(order.getCreatedAt());
-//        createOrderResponse.setStatus(ORDER_CREATED_SUCCESS_MESSAGE.getMessage());
-//        return createOrderResponse;
-//    }
+    @Override
+    public OrderDetailsResponse getOrderById(Long orderId) {
+        OrderEntity order = orderEntityRepository.findById(orderId)
+                .orElseThrow(() -> new OrdersNotFoundException(ORDERS_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
+        return mapToOrderDetailsResponse(order);
+    }
 
+    @Override
+    public List<OrderDetailsResponse> getOrdersByCustomerId(Long customerId) {
+        List<OrderEntity> orders = orderEntityRepository.findByCustomerIdOrderByCreatedAtDesc(customerId);
+        return orders.stream().map(this::mapToOrderDetailsResponse).collect(java.util.stream.Collectors.toList());
+    }
 
+    @Override
+    public List<OrderDetailsResponse> getOrdersByDryCleanerId(Long dryCleanerId) {
+        List<OrderEntity> orders = orderEntityRepository.findByDryCleanerIdOrderByCreatedAtDesc(dryCleanerId);
+        return orders.stream().map(this::mapToOrderDetailsResponse).collect(java.util.stream.Collectors.toList());
+    }
+
+    private OrderDetailsResponse mapToOrderDetailsResponse(OrderEntity order) {
+        OrderDetailsResponse resp = new OrderDetailsResponse();
+        resp.setId(order.getId());
+        resp.setOrderNumber("ORD-" + order.getId()); // Simple fallback
+        resp.setStatus(order.getOrderStatus().name().toLowerCase());
+        resp.setCreatedAt(order.getCreatedAt());
+        resp.setPickupAddress(order.getPickupAddress());
+        resp.setDeliveryAddress(order.getDeliveryAddress());
+        resp.setPickupTime(order.getPickupAt());
+        resp.setDeliveryTime(order.getDeliveryAt());
+        resp.setTotalCost(order.getTotalAmount() != null ? order.getTotalAmount() : 0.0);
+
+        if (order.getDryCleaner() != null) {
+            resp.setCleanerName(order.getDryCleaner().getBusinessName());
+        }
+
+        if (order.getCustomer() != null) {
+            resp.setCustomerName(order.getCustomer().getFirstName() + " " + order.getCustomer().getLastName());
+        }
+
+        if (order.getOrderServiceItems() != null) {
+            List<OrderItemResponse> itemResponses = order.getOrderServiceItems().stream().map(item -> {
+                OrderItemResponse ir = new OrderItemResponse();
+                if (item.getServiceOffering() != null) {
+                    ir.setClothType(item.getServiceOffering().getServiceName());
+                }
+                ir.setQuantity(item.getQuantity());
+                ir.setPricePerItem(item.getPriceSnapshot() != null ? item.getPriceSnapshot() : 0.0);
+                ir.setSubtotal(ir.getPricePerItem() * ir.getQuantity());
+                return ir;
+            }).collect(java.util.stream.Collectors.toList());
+            resp.setItems(itemResponses);
+        }
+
+        return resp;
+    }
+
+    @Override
+    @Transactional
+    public com.kaldar.kaldar.order.application.dto.response.SubmitReviewResponse submitReview(com.kaldar.kaldar.order.application.dto.request.SubmitReviewRequest request) {
+        OrderEntity order = orderEntityRepository.findById(request.getOrderId())
+                .orElseThrow(() -> new OrdersNotFoundException(ORDERS_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
+        
+        CustomerEntity customer = customerEntityRepository.findById(request.getCustomerId())
+                .orElseThrow(() -> new UserNotFoundException(CUSTOMER_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
+        
+        DryCleanerEntity dryCleaner = dryCleanerEntityRepository.findById(request.getDryCleanerId())
+                .orElseThrow(() -> new UserNotFoundException(DRY_CLEANER_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
+
+        com.kaldar.kaldar.order.domain.model.ReviewEntity review = new com.kaldar.kaldar.order.domain.model.ReviewEntity();
+        review.setOrder(order);
+        review.setCustomer(customer);
+        review.setDryCleaner(dryCleaner);
+        review.setRating(request.getRating());
+        review.setComment(request.getComment());
+        review.setCreatedAt(LocalDateTime.now());
+
+        com.kaldar.kaldar.order.domain.model.ReviewEntity saved = reviewRepository.save(review);
+        
+        return new com.kaldar.kaldar.order.application.dto.response.SubmitReviewResponse(saved.getId(), "Review submitted successfully");
+    }
+
+    @Override
+    @Transactional
+    public com.kaldar.kaldar.order.application.dto.response.RejectOrderResponse rejectOrder(com.kaldar.kaldar.order.application.dto.request.RejectOrderRequest request) {
+        OrderEntity order = orderEntityRepository.findById(request.getOrderId())
+                .orElseThrow(() -> new OrdersNotFoundException(ORDERS_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
+
+        DryCleanerEntity dryCleaner = dryCleanerEntityRepository.findById(request.getDryCleanerId())
+                .orElseThrow(() -> new UserNotFoundException(DRY_CLEANER_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
+
+        if (order.getDryCleaner() == null || !order.getDryCleaner().getId().equals(dryCleaner.getId())) {
+            throw new InvalidOrderAssignmentException("Order not assigned to this drycleaner");
+        }
+
+        if (order.getOrderStatus() != OrderStatus.PENDING_ACCEPTANCE) {
+            throw new InvalidOrderAssignmentException("Order cannot be rejected from current state: " + order.getOrderStatus());
+        }
+
+        order.setOrderStatus(OrderStatus.REJECTED);
+        order.setRejectionReason(request.getReason());
+        order.setUpdatedAt(LocalDateTime.now());
+        orderEntityRepository.save(order);
+
+        return new com.kaldar.kaldar.order.application.dto.response.RejectOrderResponse(order.getId(), "REJECTED", LocalDateTime.now());
+    }
 }

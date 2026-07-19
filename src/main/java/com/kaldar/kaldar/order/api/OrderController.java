@@ -6,6 +6,8 @@ import com.kaldar.kaldar.order.application.dto.request.CreateOrderRequest;
 import com.kaldar.kaldar.shared.api.response.ApiResponse;
 import com.kaldar.kaldar.order.application.dto.response.CreateOrderResponse;
 import com.kaldar.kaldar.order.application.dto.response.UpdateOrderStatusResponse;
+import com.kaldar.kaldar.order.application.dto.request.RejectOrderRequest;
+import com.kaldar.kaldar.order.application.dto.response.RejectOrderResponse;
 import com.kaldar.kaldar.order.application.service.OrderService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -47,6 +49,18 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
     }
 
+    @PostMapping("/reject")
+    public ResponseEntity<ApiResponse<RejectOrderResponse>> rejectOrder(@RequestBody RejectOrderRequest rejectOrderRequest){
+        RejectOrderResponse rejectOrderResponse = orderService.rejectOrder(rejectOrderRequest);
+        ApiResponse<RejectOrderResponse> apiResponse = ApiResponse.<RejectOrderResponse>builder()
+                .isSuccess(true)
+                .status(HttpStatus.OK.value())
+                .message("Order rejected successfully")
+                .data(rejectOrderResponse)
+                .build();
+        return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
+    }
+
     @PatchMapping("/{orderId}/status")
     public ResponseEntity<ApiResponse<UpdateOrderStatusResponse>> updateOrderStatus(
             @PathVariable Long orderId,
@@ -58,6 +72,42 @@ public class OrderController {
                 .isSuccess(true)
                 .status(HttpStatus.OK.value())
                 .message("Order status updated")
+                .data(response)
+                .build();
+        return ResponseEntity.ok(api);
+    }
+
+    @GetMapping("/{orderId}")
+    public ResponseEntity<ApiResponse<com.kaldar.kaldar.order.application.dto.response.OrderDetailsResponse>> getOrderById(@PathVariable Long orderId) {
+        com.kaldar.kaldar.order.application.dto.response.OrderDetailsResponse response = orderService.getOrderById(orderId);
+        ApiResponse<com.kaldar.kaldar.order.application.dto.response.OrderDetailsResponse> api = ApiResponse.<com.kaldar.kaldar.order.application.dto.response.OrderDetailsResponse>builder()
+                .isSuccess(true)
+                .status(HttpStatus.OK.value())
+                .message("Order retrieved")
+                .data(response)
+                .build();
+        return ResponseEntity.ok(api);
+    }
+
+    @GetMapping("/customer/{customerId}")
+    public ResponseEntity<ApiResponse<java.util.List<com.kaldar.kaldar.order.application.dto.response.OrderDetailsResponse>>> getCustomerOrders(@PathVariable Long customerId) {
+        java.util.List<com.kaldar.kaldar.order.application.dto.response.OrderDetailsResponse> response = orderService.getOrdersByCustomerId(customerId);
+        ApiResponse<java.util.List<com.kaldar.kaldar.order.application.dto.response.OrderDetailsResponse>> api = ApiResponse.<java.util.List<com.kaldar.kaldar.order.application.dto.response.OrderDetailsResponse>>builder()
+                .isSuccess(true)
+                .status(HttpStatus.OK.value())
+                .message("Customer orders retrieved")
+                .data(response)
+                .build();
+        return ResponseEntity.ok(api);
+    }
+
+    @GetMapping("/drycleaner/{dryCleanerId}")
+    public ResponseEntity<ApiResponse<java.util.List<com.kaldar.kaldar.order.application.dto.response.OrderDetailsResponse>>> getDryCleanerOrders(@PathVariable Long dryCleanerId) {
+        java.util.List<com.kaldar.kaldar.order.application.dto.response.OrderDetailsResponse> response = orderService.getOrdersByDryCleanerId(dryCleanerId);
+        ApiResponse<java.util.List<com.kaldar.kaldar.order.application.dto.response.OrderDetailsResponse>> api = ApiResponse.<java.util.List<com.kaldar.kaldar.order.application.dto.response.OrderDetailsResponse>>builder()
+                .isSuccess(true)
+                .status(HttpStatus.OK.value())
+                .message("Dry cleaner orders retrieved")
                 .data(response)
                 .build();
         return ResponseEntity.ok(api);

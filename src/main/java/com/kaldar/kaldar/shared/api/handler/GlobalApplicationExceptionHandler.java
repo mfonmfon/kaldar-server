@@ -9,6 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -69,7 +70,10 @@ public class GlobalApplicationExceptionHandler {
     @ExceptionHandler({
             CustomerEmailAlreadyExist.class,
             DryCleanerEmailAlreadyExistException.class,
-            DryCleanerBusinessEmailExistException.class
+            DryCleanerBusinessEmailExistException.class,
+            DuplicateRegistrationNumberException.class,
+            DuplicateTaxIdentificationNumberException.class,
+            BusinessAlreadyVerifiedException.class
     })
     public ResponseEntity<ApiErrorResponse> handleEmailConflictExceptions(RuntimeException exception, HttpServletRequest request) {
         ApiErrorResponse apiErrorResponse = buildErrorResponse(
@@ -104,6 +108,24 @@ public class GlobalApplicationExceptionHandler {
     }
 
     /**
+     * Handle business logic validation issues.
+     */
+    @ResponseStatus
+    @ExceptionHandler({
+            IllegalArgumentException.class,
+            IllegalStateException.class
+    })
+    public ResponseEntity<ApiErrorResponse> handleBusinessLogicExceptions(RuntimeException exception, HttpServletRequest request) {
+        ApiErrorResponse apiErrorResponse = buildErrorResponse(
+                exception.getMessage(),
+                HttpStatus.BAD_REQUEST,
+                request.getRequestURI(),
+                null
+        );
+        return ResponseEntity.badRequest().body(apiErrorResponse);
+    }
+
+    /**
      * Catch-all for unhandled exceptions.
      */
     @ExceptionHandler(Exception.class)
@@ -115,5 +137,35 @@ public class GlobalApplicationExceptionHandler {
                 exception.getMessage()
         );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(apiErrorResponse);
+    }
+
+    /**
+     * Handle file upload failures (wrong file type, Cloudinary I/O error, etc.).
+     */
+    @ExceptionHandler(FileUploadException.class)
+    public ResponseEntity<ApiErrorResponse> handleFileUploadException(
+            FileUploadException exception, HttpServletRequest request) {
+        ApiErrorResponse apiErrorResponse = buildErrorResponse(
+                exception.getMessage(),
+                HttpStatus.BAD_REQUEST,
+                request.getRequestURI(),
+                null
+        );
+        return ResponseEntity.badRequest().body(apiErrorResponse);
+    }
+
+    /**
+     * Handle files larger than the configured multipart limit (10 MB).
+     */
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiErrorResponse> handleMaxUploadSizeExceededException(
+            MaxUploadSizeExceededException exception, HttpServletRequest request) {
+        ApiErrorResponse apiErrorResponse = buildErrorResponse(
+                "File size exceeds the maximum allowed limit of 10 MB",
+                HttpStatus.PAYLOAD_TOO_LARGE,
+                request.getRequestURI(),
+                null
+        );
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(apiErrorResponse);
     }
 }

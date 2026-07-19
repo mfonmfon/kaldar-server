@@ -19,7 +19,7 @@ public class DryCleanerRegistrationRequest {
     private String businessName;
 
     @Email(message = "Cannot be an invalid Email")
-    @NotBlank(message = "BusinessAddress is required")
+    @NotBlank(message = "BusinessEmail is required")
     private String businessEmail;
 
     @NotBlank(message = "ShopAddress is required")
