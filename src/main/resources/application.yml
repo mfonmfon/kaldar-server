@@ -22,7 +22,7 @@ spring:
     from-name: "Kaldar"
     from-email: ${MAIL_USERNAME}
   config:
-    import: classpath:secret.yml
+    import: optional:classpath:secret.yml
   servlet:
     multipart:
       max-file-size: 10MB
