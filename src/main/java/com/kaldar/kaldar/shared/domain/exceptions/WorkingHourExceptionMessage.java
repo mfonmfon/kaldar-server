@@ -1,7 +1,9 @@
 package com.kaldar.kaldar.shared.domain.exceptions;
 
-public class WorkingHourExceptionMessage extends RuntimeException {
+import org.springframework.http.HttpStatus;
+
+public class WorkingHourExceptionMessage extends KaldarBusinessException {
     public WorkingHourExceptionMessage(String message) {
-        super(message);
+        super("INVALID_WORKING_HOURS", message, HttpStatus.BAD_REQUEST);
     }
 }

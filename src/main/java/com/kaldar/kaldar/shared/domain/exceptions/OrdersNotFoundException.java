@@ -1,7 +1,9 @@
 package com.kaldar.kaldar.shared.domain.exceptions;
 
-public class OrdersNotFoundException extends RuntimeException {
+import org.springframework.http.HttpStatus;
+
+public class OrdersNotFoundException extends KaldarBusinessException {
     public OrdersNotFoundException(String message) {
-        super(message);
+        super("ORDERS_NOT_FOUND", message, HttpStatus.NOT_FOUND);
     }
 }

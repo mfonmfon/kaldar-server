@@ -4,17 +4,19 @@ info:
   description: |
     Complete Production REST API specification for the Kaldar Monorepo (Laundry & Dry Cleaning Platform).
     
-    ### Modules Included:
-    1. **Authentication & OTP**: Registration, login, OTP verification, password reset.
-    2. **Customer**: Profile management, update, password change.
-    3. **DryCleaner**: Business registration, CAC document verification, services/inventory, working hours, payout account, analytics, onboarding status.
-    4. **Discovery**: Geospatial search for available dry cleaners nearby.
-    5. **Order & Review**: Order placement, accept/reject, status progression, customer reviews & ratings.
-    6. **Dispatch & Logistics**: Delivery partner webhook callbacks (Chowdeck / Uber Direct).
-    7. **Notification**: User notifications list, read status toggling, bulk operations.
-    8. **Favourite**: Customer saved dry cleaners.
-    9. **Wallet**: Customer wallet balance, summary history, credit & debit.
-    10. **Payment**: Paystack wallet top-up initiation, HMAC-verified webhook processing, history.
+    ### Full API Inventory (49 Endpoints across 13 Controllers):
+    1. **Authentication & Verification**: Login, OTP verification & resending, Forgot Password, Reset Password.
+    2. **Customer**: Registration, profile fetch, update profile, change password.
+    3. **Dry Cleaner Store & Ops**: Registration, profile edit, CAC business verification & status check, service inventory management, payout bank account setup, working hours schedule, onboarding checklist status, analytics metrics.
+    4. **Payout**: Bank account verification.
+    5. **Discovery**: Geospatial discovery of nearby available dry cleaners.
+    6. **Order Management**: Create order, accept order, reject order, order status progression, fetch order details, customer order history, dry cleaner order queue.
+    7. **Review & Ratings**: Submit review, dry cleaner store reviews list, single order review fetch.
+    8. **Logistics & Dispatch**: Delivery partner webhook callbacks (Chowdeck, Uber Direct, etc.).
+    9. **Notification Center**: Paginated notifications list, toggle read status, delete single, bulk mark read/unread/delete, mark all read.
+    10. **Favourites**: Customer saved dry cleaners list, add to favourites, remove from favourites.
+    11. **Wallet**: Customer wallet balance, user wallet summary & transaction history, internal credit & debit.
+    12. **Payment (Paystack)**: Wallet top-up initiation, HMAC-SHA512 webhook callback, transaction history.
   version: 1.0.0
   contact:
     name: Kaldar Engineering Team
@@ -31,38 +33,27 @@ security:
 
 tags:
   - name: Authentication
-    description: User login, OTP verification, and password reset workflows
   - name: Customer
-    description: Customer profile management and account settings
   - name: DryCleaner
-    description: Dry cleaner store setup, verification, working hours, and analytics
+  - name: Payout
   - name: Discovery
-    description: Geospatial discovery of nearby dry cleaners
   - name: Order
-    description: Order placement, dispatch lifecycle, and status updates
   - name: Review
-    description: Order rating and feedback reviews
-  - name: Wallet
-    description: Customer wallet balance and transaction summary
-  - name: Payment
-    description: External wallet funding via Paystack integration
-  - name: Favorites
-    description: Customer saved favorite dry cleaners
-  - name: Notifications
-    description: User notification center and read management
   - name: Logistics
-    description: Third-party logistics provider callbacks
+  - name: Notifications
+  - name: Favorites
+  - name: Wallet
+  - name: Payment
 
 paths:
 
   # =========================================================================
-  # 1. AUTHENTICATION & OTP
+  # 1. AUTHENTICATION & VERIFICATION (5 Endpoints)
   # =========================================================================
   /api/v1/auth/login:
     post:
       tags: [Authentication]
       summary: User Login
-      description: Authenticates user credentials and returns a Bearer JWT token.
       security: []
       requestBody:
         required: true
@@ -75,13 +66,12 @@ paths:
                 email: { type: string, example: "customer@kaldar.com" }
                 password: { type: string, example: "Password123!" }
       responses:
-        '200':
-          description: Login successful, returns JWT token
+        '200': { description: Login successful, returns JWT bearer token }
 
   /api/v1/auth/verify-otp:
     post:
       tags: [Authentication]
-      summary: Verify Email OTP
+      summary: Verify Account Email OTP
       security: []
       requestBody:
         required: true
@@ -94,9 +84,9 @@ paths:
                 email: { type: string, example: "customer@kaldar.com" }
                 otpInput: { type: string, example: "123456" }
       responses:
-        '200': { description: OTP verified successfully }
+        '200': { description: OTP verified }
 
-  /api/v1/auth/resend-otp:
+  /api/v1/auth/resendOtp:
     post:
       tags: [Authentication]
       summary: Resend Verification OTP
@@ -111,9 +101,9 @@ paths:
               properties:
                 email: { type: string, example: "customer@kaldar.com" }
       responses:
-        '200': { description: New OTP sent to email }
+        '200': { description: OTP resent }
 
-  /api/v1/auth/forgot_password:
+  /api/v1/auth/forgot-password:
     post:
       tags: [Authentication]
       summary: Request Password Reset Token
@@ -128,12 +118,12 @@ paths:
               properties:
                 email: { type: string, example: "user@kaldar.com" }
       responses:
-        '200': { description: Password reset link/token sent }
+        '200': { description: Reset token sent }
 
-  /api/v1/auth/reset_password:
+  /api/v1/auth/reset-password:
     post:
       tags: [Authentication]
-      summary: Reset Password with Token
+      summary: Reset Password using Token
       security: []
       requestBody:
         required: true
@@ -143,19 +133,19 @@ paths:
               type: object
               required: [email, resetToken, newPassword]
               properties:
-                email: { type: string, example: "user@kaldar.com" }
-                resetToken: { type: string, example: "RESET-TOKEN-123" }
-                newPassword: { type: string, example: "NewPassword123!" }
+                email: { type: string }
+                resetToken: { type: string }
+                newPassword: { type: string }
       responses:
         '200': { description: Password reset successfully }
 
   # =========================================================================
-  # 2. CUSTOMER MODULE
+  # 2. CUSTOMER MODULE (4 Endpoints)
   # =========================================================================
   /api/v1/customer/register:
     post:
       tags: [Customer]
-      summary: Register New Customer Account
+      summary: Register Customer Account
       security: []
       requestBody:
         required: true
@@ -165,14 +155,14 @@ paths:
               type: object
               required: [firstName, lastName, email, password, phoneNumber]
               properties:
-                firstName: { type: string, example: "John" }
-                lastName: { type: string, example: "Doe" }
-                email: { type: string, example: "john.doe@example.com" }
-                password: { type: string, example: "Password123!" }
-                phoneNumber: { type: string, example: "+2348012345678" }
-                address: { type: string, example: "15 Victoria Island, Lagos" }
+                firstName: { type: string }
+                lastName: { type: string }
+                email: { type: string }
+                password: { type: string }
+                phoneNumber: { type: string }
+                address: { type: string }
       responses:
-        '201': { description: Customer registered successfully }
+        '201': { description: Customer registered }
 
   /api/v1/customer/updated_customer_profile:
     put:
@@ -202,7 +192,7 @@ paths:
           required: true
           schema: { type: integer, format: int64 }
       responses:
-        '200': { description: Profile fetched }
+        '200': { description: Profile retrieved }
 
   /api/v1/customer/change_password:
     put:
@@ -219,15 +209,15 @@ paths:
                 oldPassword: { type: string }
                 newPassword: { type: string }
       responses:
-        '200': { description: Password changed }
+        '200': { description: Password updated }
 
   # =========================================================================
-  # 3. DRY CLEANER MODULE
+  # 3. DRY CLEANER & PAYOUT MODULE (11 Endpoints)
   # =========================================================================
   /api/v1/drycleaner/drycleaner/register:
     post:
       tags: [DryCleaner]
-      summary: Register New Dry Cleaner Store
+      summary: Register Dry Cleaner Store
       security: []
       requestBody:
         required: true
@@ -237,19 +227,30 @@ paths:
               type: object
               required: [businessName, email, password, phoneNumber, address]
               properties:
-                businessName: { type: string, example: "Clean & Fresh Laundry" }
-                email: { type: string, example: "store@cleanfresh.com" }
-                password: { type: string, example: "Password123!" }
-                phoneNumber: { type: string, example: "+2348087654321" }
-                address: { type: string, example: "12 Lekki Phase 1, Lagos" }
+                businessName: { type: string }
+                email: { type: string }
+                password: { type: string }
+                phoneNumber: { type: string }
+                address: { type: string }
       responses:
         '201': { description: Dry cleaner registered }
+
+  /api/v1/drycleaner/drycleaner/edit-profile:
+    patch:
+      tags: [DryCleaner]
+      summary: Edit Dry Cleaner Store Profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object }
+      responses:
+        '200': { description: Profile edited }
 
   /api/v1/drycleaner/drycleaner/verify-business:
     post:
       tags: [DryCleaner]
-      summary: Submit CAC Business Verification Documents
-      description: Multipart form submission containing JSON data and CAC Certificate file.
+      summary: Submit CAC Business Verification
       requestBody:
         required: true
         content:
@@ -257,43 +258,34 @@ paths:
             schema:
               type: object
               properties:
-                data:
-                  type: object
-                  properties:
-                    dryCleanerId: { type: integer }
-                    businessName: { type: string }
-                    registrationNumber: { type: string }
-                    taxIdentificationNumber: { type: string }
-                cacDocument:
-                  type: string
-                  format: binary
+                data: { type: object }
+                cacDocument: { type: string, format: binary }
       responses:
         '201': { description: Verification submitted }
 
   /api/v1/drycleaner/drycleaner/{dryCleanerId}/verification-status:
     get:
       tags: [DryCleaner]
-      summary: Check CAC Verification Status
+      summary: Get CAC Verification Status
       parameters:
         - name: dryCleanerId
           in: path
           required: true
           schema: { type: integer, format: int64 }
       responses:
-        '200': { description: Verification status retrieved }
+        '200': { description: Status retrieved }
 
   /api/v1/drycleaner/drycleaner/{dryCleanerId}/services:
     get:
       tags: [DryCleaner]
-      summary: List Dry Cleaner Services / Offerings
+      summary: Get Dry Cleaner Services Offering List
       parameters:
         - name: dryCleanerId
           in: path
           required: true
           schema: { type: integer, format: int64 }
       responses:
-        '200': { description: Services list fetched }
-
+        '200': { description: Services list }
     post:
       tags: [DryCleaner]
       summary: Add or Update Service Offering
@@ -310,16 +302,15 @@ paths:
               type: object
               required: [serviceName, price]
               properties:
-                serviceName: { type: string, example: "Dry Cleaning - Suit (2 piece)" }
-                description: { type: string, example: "Professional suit cleaning" }
-                price: { type: number, example: 3500.00 }
+                serviceName: { type: string }
+                price: { type: number }
       responses:
         '201': { description: Service offering added/updated }
 
   /api/v1/drycleaner/drycleaner/payout-account:
     post:
       tags: [DryCleaner]
-      summary: Update Payout Bank Account
+      summary: Update Bank Payout Account
       requestBody:
         required: true
         content:
@@ -329,17 +320,17 @@ paths:
               required: [dryCleanerId, accountName, accountNumber, bankCode, bankName]
               properties:
                 dryCleanerId: { type: integer }
-                accountName: { type: string, example: "Clean & Fresh Ltd" }
-                accountNumber: { type: string, example: "0123456789" }
-                bankCode: { type: string, example: "058" }
-                bankName: { type: string, example: "GTBank" }
+                accountName: { type: string }
+                accountNumber: { type: string }
+                bankCode: { type: string }
+                bankName: { type: string }
       responses:
-        '200': { description: Payout account updated }
+        '200': { description: Payout account saved }
 
   /api/v1/drycleaner/drycleaner/working-hours:
     post:
       tags: [DryCleaner]
-      summary: Update Working Hours Schedule
+      summary: Update Store Working Hours
       requestBody:
         required: true
         content:
@@ -349,9 +340,9 @@ paths:
               required: [dryCleanerId, workingHoursJson]
               properties:
                 dryCleanerId: { type: integer }
-                workingHoursJson: { type: string, example: "{\"mon\": \"08:00-18:00\"}" }
+                workingHoursJson: { type: string }
       responses:
-        '200': { description: Working hours updated }
+        '200': { description: Working hours saved }
 
   /api/v1/drycleaner/drycleaner/{dryCleanerId}/onboarding-status:
     get:
@@ -363,7 +354,7 @@ paths:
           required: true
           schema: { type: integer, format: int64 }
       responses:
-        '200': { description: Onboarding status retrieved }
+        '200': { description: Onboarding status fetched }
 
   /api/v1/drycleaner/drycleaner/{dryCleanerId}/analytics:
     get:
@@ -378,58 +369,75 @@ paths:
           in: query
           schema: { type: string, default: "today" }
       responses:
-        '200': { description: Analytics retrieved }
+        '200': { description: Analytics metrics fetched }
+
+  /api/v1/drycleaner/payout/verify-account:
+    get:
+      tags: [Payout]
+      summary: Verify Bank Account Number with Paystack Payout
+      parameters:
+        - name: accountNumber
+          in: query
+          required: true
+          schema: { type: string }
+        - name: bankCode
+          in: query
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Bank account name verified }
 
   # =========================================================================
-  # 4. DISCOVERY MODULE
+  # 4. DISCOVERY MODULE (1 Endpoint)
   # =========================================================================
-  /api/v1/drycleaners/available:
-    post:
+  /api/v1/drycleaners:
+    get:
       tags: [Discovery]
-      summary: Search Available Dry Cleaners Nearby
+      summary: Search Nearby Available Dry Cleaners (Geospatial)
       security: []
+      parameters:
+        - name: lat
+          in: query
+          required: true
+          schema: { type: number, format: double }
+        - name: lng
+          in: query
+          required: true
+          schema: { type: number, format: double }
+        - name: radiusKm
+          in: query
+          required: true
+          schema: { type: number, format: double, default: 10.0 }
+        - name: openNow
+          in: query
+          schema: { type: boolean }
+      responses:
+        '200': { description: Available dry cleaners nearby }
+
+  # =========================================================================
+  # 5. ORDER & REVIEW MODULE (10 Endpoints)
+  # =========================================================================
+  /api/v1/order/create-order:
+    post:
+      tags: [Order]
+      summary: Create New Order
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              required: [lat, lng, radiusKm]
-              properties:
-                lat: { type: number, format: double, example: 6.4531 }
-                lng: { type: number, format: double, example: 3.3958 }
-                radiusKm: { type: number, format: double, example: 10.0 }
-                services: { type: array, items: { type: string } }
-                openNow: { type: boolean, example: true }
+            schema: { type: object }
       responses:
-        '200': { description: Nearby dry cleaners list }
+        '200': { description: Order created }
 
-  # =========================================================================
-  # 5. ORDER & REVIEW MODULE
-  # =========================================================================
   /api/v1/order:
     post:
       tags: [Order]
-      summary: Place New Order
+      summary: Place Order (Customer)
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              required: [customerId, dryCleanerId, serviceItems]
-              properties:
-                customerId: { type: integer }
-                dryCleanerId: { type: integer }
-                pickupAddress: { type: string }
-                deliveryAddress: { type: string }
-                serviceItems:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      serviceOfferingId: { type: integer }
-                      quantity: { type: integer }
+            schema: { type: object }
       responses:
         '200': { description: Order placed }
 
@@ -441,12 +449,7 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              required: [orderId, dryCleanerId]
-              properties:
-                orderId: { type: integer }
-                dryCleanerId: { type: integer }
+            schema: { type: object }
       responses:
         '200': { description: Order accepted }
 
@@ -458,34 +461,64 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              required: [orderId, dryCleanerId, reason]
-              properties:
-                orderId: { type: integer }
-                dryCleanerId: { type: integer }
-                reason: { type: string }
+            schema: { type: object }
       responses:
         '200': { description: Order rejected }
 
-  /api/v1/order/status:
+  /api/v1/order/{orderId}/status:
     patch:
       tags: [Order]
       summary: Update Order Status Progression
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              required: [orderId, status]
-              properties:
-                orderId: { type: integer }
-                status: { type: string, example: "IN_PROGRESS" }
+            schema: { type: object }
       responses:
         '200': { description: Order status updated }
 
-  /api/v1/order/review:
+  /api/v1/order/{orderId}:
+    get:
+      tags: [Order]
+      summary: Get Order Details
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '200': { description: Order details retrieved }
+
+  /api/v1/order/customer/{customerId}:
+    get:
+      tags: [Order]
+      summary: Get Orders for Customer
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '200': { description: Customer orders list }
+
+  /api/v1/order/drycleaner/{dryCleanerId}:
+    get:
+      tags: [Order]
+      summary: Get Orders for Dry Cleaner Store
+      parameters:
+        - name: dryCleanerId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '200': { description: Store orders list }
+
+  /api/v1/order/review/submit:
     post:
       tags: [Review]
       summary: Submit Order Review & Rating
@@ -493,15 +526,7 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              required: [orderId, customerId, dryCleanerId, rating]
-              properties:
-                orderId: { type: integer }
-                customerId: { type: integer }
-                dryCleanerId: { type: integer }
-                rating: { type: integer, example: 5 }
-                comment: { type: string, example: "Excellent cleaning!" }
+            schema: { type: object }
       responses:
         '200': { description: Review submitted }
 
@@ -515,41 +540,41 @@ paths:
           required: true
           schema: { type: integer, format: int64 }
       responses:
-        '200': { description: Store reviews fetched }
+        '200': { description: Store reviews list }
 
-  /api/v1/order/review/{orderId}:
+  /api/v1/order/review/order/{orderId}:
     get:
       tags: [Review]
-      summary: Get Review for Specific Order
+      summary: Get Review for Order
       parameters:
         - name: orderId
           in: path
           required: true
           schema: { type: integer, format: int64 }
       responses:
-        '200': { description: Order review fetched }
+        '200': { description: Order review retrieved }
 
   # =========================================================================
-  # 6. WALLET MODULE
+  # 6. WALLET MODULE (4 Endpoints)
   # =========================================================================
   /api/v1/wallet/balance:
     get:
       tags: [Wallet]
       summary: Get Customer Wallet Balance
       responses:
-        '200': { description: Balance fetched }
+        '200': { description: Wallet balance retrieved }
 
   /api/v1/wallet/{userId}/summary:
     get:
       tags: [Wallet]
-      summary: Get Wallet Summary & History
+      summary: Get Wallet Summary & Transaction History
       parameters:
         - name: userId
           in: path
           required: true
           schema: { type: integer, format: int64 }
       responses:
-        '200': { description: Summary fetched }
+        '200': { description: Summary retrieved }
 
   /api/v1/wallet/credit:
     post:
@@ -559,14 +584,7 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              required: [userId, amount]
-              properties:
-                userId: { type: integer }
-                amount: { type: number }
-                description: { type: string }
-                reference: { type: string }
+            schema: { type: object }
       responses:
         '200': { description: Wallet credited }
 
@@ -578,19 +596,12 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              required: [userId, amount]
-              properties:
-                userId: { type: integer }
-                amount: { type: number }
-                description: { type: string }
-                reference: { type: string }
+            schema: { type: object }
       responses:
         '200': { description: Wallet debited }
 
   # =========================================================================
-  # 7. PAYMENT MODULE (PAYSTACK)
+  # 7. PAYMENT MODULE - PAYSTACK (3 Endpoints)
   # =========================================================================
   /api/v1/payment/initiate:
     post:
@@ -606,7 +617,7 @@ paths:
               properties:
                 amount: { type: number, example: 5000.00 }
       responses:
-        '200': { description: Payment authorization URL returned }
+        '200': { description: Paystack authorization URL returned }
 
   /api/v1/payment/webhook:
     post:
@@ -629,24 +640,24 @@ paths:
   /api/v1/payment/history:
     get:
       tags: [Payment]
-      summary: Get Payment Top-up History
+      summary: Get Payment Transaction History
       responses:
         '200': { description: Payment transactions list }
 
   # =========================================================================
-  # 8. FAVOURITES MODULE
+  # 8. FAVOURITES MODULE (3 Endpoints)
   # =========================================================================
   /api/v1/favorites:
     get:
       tags: [Favorites]
       summary: Get Saved Favorite Dry Cleaners
       responses:
-        '200': { description: Saved dry cleaner IDs }
+        '200': { description: Saved dry cleaner IDs list }
 
   /api/v1/favorites/{dryCleanerId}:
     post:
       tags: [Favorites]
-      summary: Save Dry Cleaner to Favorites
+      summary: Add Dry Cleaner to Favorites
       parameters:
         - name: dryCleanerId
           in: path
@@ -667,7 +678,7 @@ paths:
         '200': { description: Removed from favorites }
 
   # =========================================================================
-  # 9. NOTIFICATION MODULE
+  # 9. NOTIFICATION MODULE (7 Endpoints)
   # =========================================================================
   /api/v1/notifications:
     get:
@@ -724,7 +735,7 @@ paths:
   /api/v1/notifications/bulk/read:
     post:
       tags: [Notifications]
-      summary: Bulk Mark Read
+      summary: Bulk Mark Notifications Read
       requestBody:
         required: true
         content:
@@ -735,12 +746,12 @@ paths:
               properties:
                 ids: { type: array, items: { type: integer } }
       responses:
-        '200': { description: Bulk read complete }
+        '200': { description: Bulk read completed }
 
   /api/v1/notifications/bulk/unread:
     post:
       tags: [Notifications]
-      summary: Bulk Mark Unread
+      summary: Bulk Mark Notifications Unread
       requestBody:
         required: true
         content:
@@ -751,7 +762,7 @@ paths:
               properties:
                 ids: { type: array, items: { type: integer } }
       responses:
-        '200': { description: Bulk unread complete }
+        '200': { description: Bulk unread completed }
 
   /api/v1/notifications/bulk/delete:
     post:
@@ -767,7 +778,7 @@ paths:
               properties:
                 ids: { type: array, items: { type: integer } }
       responses:
-        '200': { description: Bulk delete complete }
+        '200': { description: Bulk delete completed }
 
   /api/v1/notifications/read-all:
     post:
@@ -777,20 +788,25 @@ paths:
         '200': { description: All marked read }
 
   # =========================================================================
-  # 10. DISPATCH LOGISTICS MODULE
+  # 10. LOGISTICS DISPATCH MODULE (1 Endpoint)
   # =========================================================================
-  /api/v1/logistics/webhook:
+  /api/v1/logistics/webhook/{provider}:
     post:
       tags: [Logistics]
-      summary: Delivery Partner Webhook Callback
+      summary: Delivery Provider Webhook Callback (Chowdeck / Uber Direct)
       security: []
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema: { type: string, example: "chowdeck" }
       requestBody:
         required: true
         content:
           application/json:
             schema: { type: object }
       responses:
-        '200': { description: Logistics event processed }
+        '200': { description: Logistics webhook processed }
 
 components:
   securitySchemes:

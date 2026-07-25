@@ -1,7 +1,9 @@
 package com.kaldar.kaldar.shared.domain.exceptions;
 
-public class EmptyRequiredFieldException extends RuntimeException {
+import org.springframework.http.HttpStatus;
+
+public class EmptyRequiredFieldException extends KaldarBusinessException {
     public EmptyRequiredFieldException(String message) {
-        super(message);
+        super("EMPTY_REQUIRED_FIELD", message, HttpStatus.BAD_REQUEST);
     }
 }
