@@ -64,8 +64,8 @@ public class SecurityConfiguration {
                                 .requestMatchers("/api/v1/favorites/**").hasRole("CUSTOMER")
                                 // Wallet customer-facing balance endpoint
                                 .requestMatchers("/api/v1/wallet/**").hasRole("CUSTOMER")
-                                // Payment: webhook is public (signature verified in service), rest is CUSTOMER
-                                .requestMatchers("/api/v1/payment/webhook").permitAll()
+                                // Payment & Anchor: webhooks are public (HMAC verified in service layer), rest requires auth
+                                .requestMatchers("/api/v1/payment/webhook", "/api/v1/anchor/webhook").permitAll()
                                 .requestMatchers("/api/v1/payment/**").hasRole("CUSTOMER")
                                 .anyRequest().authenticated());
         return http.build();
@@ -79,7 +79,7 @@ public class SecurityConfiguration {
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of("Authorization", "x-paystack-signature"));
         configuration.setAllowCredentials(true);
-        
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;

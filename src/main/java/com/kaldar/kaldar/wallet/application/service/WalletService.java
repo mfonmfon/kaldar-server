@@ -11,10 +11,9 @@ public interface WalletService {
 
     void debitWallet(WalletDebitRequest request);
 
-    /**
-     * Returns the wallet balance wrapped in a response DTO (includes currency).
-     */
     WalletBalanceResponse getWalletBalance(Long userId);
 
     WalletSummaryResponse getWalletSummary(Long userId);
+
+    void createVirtualAccountForUser(Long userId);
 }

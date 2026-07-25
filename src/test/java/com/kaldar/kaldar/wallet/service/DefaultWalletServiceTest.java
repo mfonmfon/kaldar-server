@@ -37,12 +37,13 @@ class DefaultWalletServiceTest {
     @Mock private WalletRepository walletRepository;
     @Mock private WalletTransactionRepository transactionRepository;
     @Mock private UserEntityRepository userEntityRepository;
+    @Mock private com.kaldar.kaldar.shared.infrastructure.anchor.AnchorClient anchorClient;
 
     private DefaultWalletService walletService;
 
     @BeforeEach
     void setUp() {
-        walletService = new DefaultWalletService(walletRepository, transactionRepository, userEntityRepository);
+        walletService = new DefaultWalletService(walletRepository, transactionRepository, userEntityRepository, anchorClient);
     }
 
     private CustomerEntity buildUser() {

@@ -11,7 +11,10 @@ import com.kaldar.kaldar.shared.domain.exceptions.*;
 import com.kaldar.kaldar.shared.infrastructure.email.service.EmailService;
 import com.kaldar.kaldar.shared.infrastructure.auth.service.VerificationTokenService;
 import com.kaldar.kaldar.shared.infrastructure.utility.OtpGenerator;
+import com.kaldar.kaldar.wallet.application.service.WalletService;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -21,21 +24,27 @@ import static com.kaldar.kaldar.shared.domain.constants.StatusResponse.*;
 
 @Service
 public class DefaultVerificationTokenService implements VerificationTokenService {
+
+    private static final Logger log = LoggerFactory.getLogger(DefaultVerificationTokenService.class);
+
     private final VerificationTokenRepository verificationTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserEntityRepository userEntityRepository;
     private final EmailService emailService;
+    private final WalletService walletService;
     private final int otpExpiryMinutes;
 
     public DefaultVerificationTokenService(VerificationTokenRepository verificationTokenRepository,
             PasswordEncoder passwordEncoder,
             UserEntityRepository userEntityRepository,
             EmailService emailService,
+            WalletService walletService,
             @org.springframework.beans.factory.annotation.Value("${security.otp.expiry-minutes:15}") int otpExpiryMinutes) {
         this.verificationTokenRepository = verificationTokenRepository;
         this.passwordEncoder = passwordEncoder;
         this.userEntityRepository = userEntityRepository;
         this.emailService = emailService;
+        this.walletService = walletService;
         this.otpExpiryMinutes = otpExpiryMinutes;
     }
 
@@ -59,6 +68,9 @@ public class DefaultVerificationTokenService implements VerificationTokenService
 
         verificationToken.setUsedAt(LocalDateTime.now());
         verificationTokenRepository.save(verificationToken);
+
+        // Provision Anchor virtual bank account (runs silently — never blocks OTP success)
+        provisionVirtualAccountSafely(userEntity.getId());
 
         VerifyOtpResponse verifyOtpResponse = buildOTPVerificationResponseInstance(userEntity);
         verifyOtpResponse.setOtpVerificationMessage(VERIFICATION_OTP_SUCCESS_MESSAGE.getMessage());
@@ -84,6 +96,15 @@ public class DefaultVerificationTokenService implements VerificationTokenService
         verifyOtpResponse.setVerifiedAt(verificationToken.getExpiredAt().toString());
         verifyOtpResponse.setOtpVerificationMessage(RESEND_VERIFICATION_OTP_SUCCESS_MESSAGE.getMessage());
         return verifyOtpResponse;
+    }
+
+    private void provisionVirtualAccountSafely(Long userId) {
+        try {
+            walletService.createVirtualAccountForUser(userId);
+        } catch (Exception ex) {
+            // Non-fatal — logged only; user is already verified
+            log.warn("[Anchor] Failed to provision virtual account for user {}: {}", userId, ex.getMessage());
+        }
     }
 
     private @NotNull VerificationToken buildVerificationTokenInstance(String hashNewOtp, UserEntity userEntity) {
