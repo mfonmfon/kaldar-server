@@ -1,6 +1,8 @@
 package com.kaldar.kaldar.wallet.service;
 
 import com.kaldar.kaldar.customer.domain.model.CustomerEntity;
+import com.kaldar.kaldar.shared.domain.exceptions.InsufficientWalletBalanceException;
+import com.kaldar.kaldar.shared.domain.exceptions.InvalidWalletAmountException;
 import com.kaldar.kaldar.shared.domain.exceptions.UserNotFoundException;
 import com.kaldar.kaldar.shared.domain.repository.UserEntityRepository;
 import com.kaldar.kaldar.wallet.application.dto.WalletCreditRequest;
@@ -103,18 +105,18 @@ class DefaultWalletServiceTest {
         }
 
         @Test
-        @DisplayName("should throw IllegalArgumentException when credit amount is zero")
+        @DisplayName("should throw InvalidWalletAmountException when credit amount is zero")
         void shouldThrowWhenCreditAmountIsZero() {
             assertThatThrownBy(() -> walletService.creditWallet(new WalletCreditRequest(1L, BigDecimal.ZERO, "Zero", "REF")))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(InvalidWalletAmountException.class)
                     .hasMessageContaining("Credit amount must be greater than zero");
         }
 
         @Test
-        @DisplayName("should throw IllegalArgumentException when credit amount is negative")
+        @DisplayName("should throw InvalidWalletAmountException when credit amount is negative")
         void shouldThrowWhenCreditAmountIsNegative() {
             assertThatThrownBy(() -> walletService.creditWallet(new WalletCreditRequest(1L, BigDecimal.valueOf(-10.50), "Negative", "REF")))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(InvalidWalletAmountException.class)
                     .hasMessageContaining("Credit amount must be greater than zero");
         }
     }
@@ -141,7 +143,7 @@ class DefaultWalletServiceTest {
         }
 
         @Test
-        @DisplayName("should throw IllegalStateException when balance is insufficient")
+        @DisplayName("should throw InsufficientWalletBalanceException when balance is insufficient")
         void shouldThrowWhenInsufficientBalance() {
             CustomerEntity user = buildUser();
             Wallet wallet = buildWallet(user);
@@ -150,23 +152,23 @@ class DefaultWalletServiceTest {
             when(walletRepository.findByUserId(1L)).thenReturn(Optional.of(wallet));
 
             assertThatThrownBy(() -> walletService.debitWallet(new WalletDebitRequest(1L, BigDecimal.valueOf(2000.0), "Checkout", "REF")))
-                    .isInstanceOf(IllegalStateException.class)
+                    .isInstanceOf(InsufficientWalletBalanceException.class)
                     .hasMessageContaining("Insufficient wallet balance");
         }
 
         @Test
-        @DisplayName("should throw IllegalArgumentException when debit amount is zero")
+        @DisplayName("should throw InvalidWalletAmountException when debit amount is zero")
         void shouldThrowWhenDebitAmountIsZero() {
             assertThatThrownBy(() -> walletService.debitWallet(new WalletDebitRequest(1L, BigDecimal.ZERO, "Zero", "REF")))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(InvalidWalletAmountException.class)
                     .hasMessageContaining("Debit amount must be greater than zero");
         }
 
         @Test
-        @DisplayName("should throw IllegalArgumentException when debit amount is negative")
+        @DisplayName("should throw InvalidWalletAmountException when debit amount is negative")
         void shouldThrowWhenDebitAmountIsNegative() {
             assertThatThrownBy(() -> walletService.debitWallet(new WalletDebitRequest(1L, BigDecimal.valueOf(-5.0), "Negative", "REF")))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(InvalidWalletAmountException.class)
                     .hasMessageContaining("Debit amount must be greater than zero");
         }
     }

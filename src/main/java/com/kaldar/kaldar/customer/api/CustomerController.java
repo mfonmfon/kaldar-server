@@ -17,7 +17,7 @@ import static com.kaldar.kaldar.shared.domain.constants.StatusResponse.CUSTOMER_
 
 @RestController
 @RequestMapping("/api/v1/customer")
-public class CustomerController{
+public class CustomerController {
 
     private final CustomerService customerService;
 
@@ -26,8 +26,10 @@ public class CustomerController{
     }
 
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<CustomerRegistrationResponse>> register(@RequestBody CustomerRegistrationRequest customerRegistrationRequest){
-        CustomerRegistrationResponse customerRegistrationResponse = customerService.registerCustomer(customerRegistrationRequest);
+    public ResponseEntity<ApiResponse<CustomerRegistrationResponse>> register(
+            @RequestBody CustomerRegistrationRequest customerRegistrationRequest) {
+        CustomerRegistrationResponse customerRegistrationResponse = customerService
+                .registerCustomer(customerRegistrationRequest);
         ApiResponse<CustomerRegistrationResponse> apiResponse = ApiResponse.<CustomerRegistrationResponse>builder()
                 .isSuccess(true)
                 .status(HttpStatus.CREATED.value())
@@ -39,7 +41,7 @@ public class CustomerController{
 
     @PutMapping("/updated_customer_profile")
     public ResponseEntity<ApiResponse<CustomerProfileResponse>> updateCustomerProfile(
-            @RequestBody UpdateCustomerProfileRequest customerProfileRequest){
+            @RequestBody UpdateCustomerProfileRequest customerProfileRequest) {
         CustomerProfileResponse customerProfileResponse = customerService.updateCustomerProfile(customerProfileRequest);
         ApiResponse<CustomerProfileResponse> apiResponse = ApiResponse.<CustomerProfileResponse>builder()
                 .isSuccess(true)
@@ -48,10 +50,10 @@ public class CustomerController{
                 .data(customerProfileResponse)
                 .build();
         return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
-     }
+    }
 
-     @GetMapping("/{customerId}")
-    public ResponseEntity<ApiResponse<CustomerProfileResponse>> getProfile(@PathVariable Long customerId){
+    @GetMapping("/{customerId}")
+    public ResponseEntity<ApiResponse<CustomerProfileResponse>> getProfile(@PathVariable Long customerId) {
         CustomerProfileResponse customerProfileResponse = customerService.getCustomerProfile(customerId);
         ApiResponse<CustomerProfileResponse> apiResponse = ApiResponse.<CustomerProfileResponse>builder()
                 .isSuccess(true)
@@ -60,10 +62,11 @@ public class CustomerController{
                 .data(customerProfileResponse)
                 .build();
         return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
-     }
+    }
 
-     @PutMapping("/change_password")
-    public ResponseEntity<ApiResponse<ChangePasswordResponse>> changePassword(@RequestBody ChangePasswordRequest changePasswordRequest){
+    @PutMapping("/change_password")
+    public ResponseEntity<ApiResponse<ChangePasswordResponse>> changePassword(
+            @RequestBody ChangePasswordRequest changePasswordRequest) {
         ChangePasswordResponse changePasswordResponse = customerService.changePassword(changePasswordRequest);
         ApiResponse<ChangePasswordResponse> apiResponse = ApiResponse.<ChangePasswordResponse>builder()
                 .isSuccess(true)
@@ -72,6 +75,6 @@ public class CustomerController{
                 .data(changePasswordResponse)
                 .build();
         return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
-     }
+    }
 
 }

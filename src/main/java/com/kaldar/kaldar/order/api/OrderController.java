@@ -27,7 +27,8 @@ public class OrderController {
     }
 
     @PostMapping("/create-order")
-    public ResponseEntity<ApiResponse<CreateOrderResponse>> createOrder(@Valid @RequestBody CreateOrderRequest createOrderRequest){
+    public ResponseEntity<ApiResponse<CreateOrderResponse>> createOrder(
+            @Valid @RequestBody CreateOrderRequest createOrderRequest) {
         CreateOrderResponse createOrderResponse = orderService.placeOrder(createOrderRequest);
         ApiResponse<CreateOrderResponse> apiResponse = ApiResponse.<CreateOrderResponse>builder()
                 .isSuccess(true)
@@ -37,8 +38,10 @@ public class OrderController {
                 .build();
         return ResponseEntity.status(HttpStatus.CREATED).body(apiResponse);
     }
+
     @PostMapping
-    public ResponseEntity<ApiResponse<AcceptOrderResponse>> acceptOrder(@RequestBody AcceptOrderRequest acceptOrderRequest){
+    public ResponseEntity<ApiResponse<AcceptOrderResponse>> acceptOrder(
+            @RequestBody AcceptOrderRequest acceptOrderRequest) {
         AcceptOrderResponse acceptOrderResponse = orderService.acceptOrder(acceptOrderRequest);
         ApiResponse<AcceptOrderResponse> apiResponse = ApiResponse.<AcceptOrderResponse>builder()
                 .isSuccess(true)
@@ -50,7 +53,8 @@ public class OrderController {
     }
 
     @PostMapping("/reject")
-    public ResponseEntity<ApiResponse<RejectOrderResponse>> rejectOrder(@RequestBody RejectOrderRequest rejectOrderRequest){
+    public ResponseEntity<ApiResponse<RejectOrderResponse>> rejectOrder(
+            @RequestBody RejectOrderRequest rejectOrderRequest) {
         RejectOrderResponse rejectOrderResponse = orderService.rejectOrder(rejectOrderRequest);
         ApiResponse<RejectOrderResponse> apiResponse = ApiResponse.<RejectOrderResponse>builder()
                 .isSuccess(true)
@@ -64,8 +68,7 @@ public class OrderController {
     @PatchMapping("/{orderId}/status")
     public ResponseEntity<ApiResponse<UpdateOrderStatusResponse>> updateOrderStatus(
             @PathVariable Long orderId,
-            @Valid @RequestBody com.kaldar.kaldar.order.application.dto.request.UpdateOrderStatusRequest request
-    ){
+            @Valid @RequestBody com.kaldar.kaldar.order.application.dto.request.UpdateOrderStatusRequest request) {
         request.setOrderId(orderId);
         UpdateOrderStatusResponse response = orderService.updateOrderStatus(request);
         ApiResponse<UpdateOrderStatusResponse> api = ApiResponse.<UpdateOrderStatusResponse>builder()
@@ -78,8 +81,10 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}")
-    public ResponseEntity<ApiResponse<com.kaldar.kaldar.order.application.dto.response.OrderDetailsResponse>> getOrderById(@PathVariable Long orderId) {
-        com.kaldar.kaldar.order.application.dto.response.OrderDetailsResponse response = orderService.getOrderById(orderId);
+    public ResponseEntity<ApiResponse<com.kaldar.kaldar.order.application.dto.response.OrderDetailsResponse>> getOrderById(
+            @PathVariable Long orderId) {
+        com.kaldar.kaldar.order.application.dto.response.OrderDetailsResponse response = orderService
+                .getOrderById(orderId);
         ApiResponse<com.kaldar.kaldar.order.application.dto.response.OrderDetailsResponse> api = ApiResponse.<com.kaldar.kaldar.order.application.dto.response.OrderDetailsResponse>builder()
                 .isSuccess(true)
                 .status(HttpStatus.OK.value())
@@ -90,8 +95,10 @@ public class OrderController {
     }
 
     @GetMapping("/customer/{customerId}")
-    public ResponseEntity<ApiResponse<java.util.List<com.kaldar.kaldar.order.application.dto.response.OrderDetailsResponse>>> getCustomerOrders(@PathVariable Long customerId) {
-        java.util.List<com.kaldar.kaldar.order.application.dto.response.OrderDetailsResponse> response = orderService.getOrdersByCustomerId(customerId);
+    public ResponseEntity<ApiResponse<java.util.List<com.kaldar.kaldar.order.application.dto.response.OrderDetailsResponse>>> getCustomerOrders(
+            @PathVariable Long customerId) {
+        java.util.List<com.kaldar.kaldar.order.application.dto.response.OrderDetailsResponse> response = orderService
+                .getOrdersByCustomerId(customerId);
         ApiResponse<java.util.List<com.kaldar.kaldar.order.application.dto.response.OrderDetailsResponse>> api = ApiResponse.<java.util.List<com.kaldar.kaldar.order.application.dto.response.OrderDetailsResponse>>builder()
                 .isSuccess(true)
                 .status(HttpStatus.OK.value())
@@ -102,8 +109,10 @@ public class OrderController {
     }
 
     @GetMapping("/drycleaner/{dryCleanerId}")
-    public ResponseEntity<ApiResponse<java.util.List<com.kaldar.kaldar.order.application.dto.response.OrderDetailsResponse>>> getDryCleanerOrders(@PathVariable Long dryCleanerId) {
-        java.util.List<com.kaldar.kaldar.order.application.dto.response.OrderDetailsResponse> response = orderService.getOrdersByDryCleanerId(dryCleanerId);
+    public ResponseEntity<ApiResponse<java.util.List<com.kaldar.kaldar.order.application.dto.response.OrderDetailsResponse>>> getDryCleanerOrders(
+            @PathVariable Long dryCleanerId) {
+        java.util.List<com.kaldar.kaldar.order.application.dto.response.OrderDetailsResponse> response = orderService
+                .getOrdersByDryCleanerId(dryCleanerId);
         ApiResponse<java.util.List<com.kaldar.kaldar.order.application.dto.response.OrderDetailsResponse>> api = ApiResponse.<java.util.List<com.kaldar.kaldar.order.application.dto.response.OrderDetailsResponse>>builder()
                 .isSuccess(true)
                 .status(HttpStatus.OK.value())

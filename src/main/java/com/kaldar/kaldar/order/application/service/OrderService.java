@@ -21,7 +21,9 @@ public interface OrderService {
 
     java.util.List<OrderDetailsResponse> getOrdersByDryCleanerId(Long dryCleanerId);
 
-    com.kaldar.kaldar.order.application.dto.response.SubmitReviewResponse submitReview(com.kaldar.kaldar.order.application.dto.request.SubmitReviewRequest request);
+    com.kaldar.kaldar.order.application.dto.response.SubmitReviewResponse submitReview(
+            com.kaldar.kaldar.order.application.dto.request.SubmitReviewRequest request);
 
-    com.kaldar.kaldar.order.application.dto.response.RejectOrderResponse rejectOrder(com.kaldar.kaldar.order.application.dto.request.RejectOrderRequest request);
+    com.kaldar.kaldar.order.application.dto.response.RejectOrderResponse rejectOrder(
+            com.kaldar.kaldar.order.application.dto.request.RejectOrderRequest request);
 }

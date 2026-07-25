@@ -12,17 +12,22 @@ public interface DryCleanerService {
 
     DryCleanerProfileResponse editProfile(UpdateDryCleanerProfileRequest updateDryCleanerProfileRequest);
 
-    java.util.List<com.kaldar.kaldar.drycleaner.application.dto.response.ServiceOfferingResponse> getServices(Long dryCleanerId);
+    java.util.List<com.kaldar.kaldar.drycleaner.application.dto.response.ServiceOfferingResponse> getServices(
+            Long dryCleanerId);
 
-    com.kaldar.kaldar.drycleaner.application.dto.response.ServiceOfferingResponse addOrUpdateService(Long dryCleanerId, com.kaldar.kaldar.drycleaner.application.dto.request.ServiceOfferingRequest request);
+    com.kaldar.kaldar.drycleaner.application.dto.response.ServiceOfferingResponse addOrUpdateService(Long dryCleanerId,
+            com.kaldar.kaldar.drycleaner.application.dto.request.ServiceOfferingRequest request);
 
-    void updatePayoutAccount(Long dryCleanerId, String accountName, String accountNumber, String bankCode, String bankName);
+    void updatePayoutAccount(Long dryCleanerId, String accountName, String accountNumber, String bankCode,
+            String bankName);
 
     void updateWorkingHours(Long dryCleanerId, String workingHoursJson);
 
-    com.kaldar.kaldar.drycleaner.application.dto.response.OnboardingStatusResponse getOnboardingStatus(Long dryCleanerId);
+    com.kaldar.kaldar.drycleaner.application.dto.response.OnboardingStatusResponse getOnboardingStatus(
+            Long dryCleanerId);
 
-    com.kaldar.kaldar.drycleaner.application.dto.response.AnalyticsResponse getAnalytics(Long dryCleanerId, String period);
+    com.kaldar.kaldar.drycleaner.application.dto.response.AnalyticsResponse getAnalytics(Long dryCleanerId,
+            String period);
 
     AnalyticsResponse findDrycleanerByBusinessName(String businessName);
 

@@ -13,7 +13,6 @@ public class CreateOrderResponse {
     private String status;
     private LocalDateTime createdAt;
 
-
     public Long getOrderId() {
         return orderId;
     }

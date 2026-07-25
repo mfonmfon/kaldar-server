@@ -16,5 +16,4 @@ public interface CustomerService {
 
     ChangePasswordResponse changePassword(ChangePasswordRequest changePasswordRequest);
 
-
 }

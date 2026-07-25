@@ -47,4 +47,9 @@ logistics:
     webhook-secret: ${CHOWDECK_WEBHOOK_SECRET:}
   uber:
     client-id: ${UBER_CLIENT_ID:}
-    client-secret: ${UBER_CLIENT_SECRET:}
+    client-secret: ${UBER_CLIENT_SECRET:}
+
+paystack:
+  secret-key: ${PAYSTACK_SECRET_KEY:}
+  base-url: https://api.paystack.co
+

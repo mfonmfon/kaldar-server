@@ -28,10 +28,10 @@ public class DefaultVerificationTokenService implements VerificationTokenService
     private final int otpExpiryMinutes;
 
     public DefaultVerificationTokenService(VerificationTokenRepository verificationTokenRepository,
-                                           PasswordEncoder passwordEncoder,
-                                           UserEntityRepository userEntityRepository,
-                                           EmailService emailService,
-                                           @org.springframework.beans.factory.annotation.Value("${security.otp.expiry-minutes:15}") int otpExpiryMinutes) {
+            PasswordEncoder passwordEncoder,
+            UserEntityRepository userEntityRepository,
+            EmailService emailService,
+            @org.springframework.beans.factory.annotation.Value("${security.otp.expiry-minutes:15}") int otpExpiryMinutes) {
         this.verificationTokenRepository = verificationTokenRepository;
         this.passwordEncoder = passwordEncoder;
         this.userEntityRepository = userEntityRepository;
@@ -42,9 +42,9 @@ public class DefaultVerificationTokenService implements VerificationTokenService
     @Override
     public VerifyOtpResponse verifyOtp(VerifyOtpRequest verifyOtpRequest) {
         UserEntity userEntity = userEntityRepository.findByEmail(verifyOtpRequest.getEmail())
-                .orElseThrow(()-> new UserNotFoundException(CUSTOMER_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
+                .orElseThrow(() -> new UserNotFoundException(CUSTOMER_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
         VerificationToken verificationToken = verificationTokenRepository.findByUserEntityAndUsedAtIsNull(userEntity)
-                .orElseThrow(()-> new OTPNotFoundException(OTP_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
+                .orElseThrow(() -> new OTPNotFoundException(OTP_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
 
         if (userEntity.isVerifiedUser())
             throw new UserAlreadyVerifiedException(USER_ALREADY_VERIFIED_MESSAGE.getMessage());
@@ -67,12 +67,14 @@ public class DefaultVerificationTokenService implements VerificationTokenService
 
     @Override
     public VerifyOtpResponse resendOtp(ResendOtpRequest resendOtpRequest) {
-        UserEntity userEntity = userEntityRepository.findByEmail(resendOtpRequest.getEmail()).
-                orElseThrow(()-> new UserNotFoundException(CUSTOMER_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
+        UserEntity userEntity = userEntityRepository.findByEmail(resendOtpRequest.getEmail())
+                .orElseThrow(() -> new UserNotFoundException(CUSTOMER_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
         verificationTokenRepository.findByUserEntityAndUsedAtIsNull(userEntity)
-                .ifPresent(oldToken -> {oldToken.setUsedAt(LocalDateTime.now());
-                    verificationTokenRepository.save(oldToken);});
-        String  newOtp = OtpGenerator.generateOtp(6);
+                .ifPresent(oldToken -> {
+                    oldToken.setUsedAt(LocalDateTime.now());
+                    verificationTokenRepository.save(oldToken);
+                });
+        String newOtp = OtpGenerator.generateOtp(6);
         String hashNewOtp = passwordEncoder.encode(newOtp);
         VerificationToken verificationToken = buildVerificationTokenInstance(hashNewOtp, userEntity);
         verificationTokenRepository.save(verificationToken);
