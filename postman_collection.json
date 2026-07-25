@@ -1,8 +1,8 @@
 {
 	"info": {
-		"_postman_id": "kaldar-api-collection-v1",
-		"name": "Kaldar API — Notification, Favourite, Wallet & Payment",
-		"description": "Production Postman Collection for testing Kaldar Monorepo REST Endpoints.",
+		"_postman_id": "kaldar-complete-api-collection-v1",
+		"name": "Kaldar Platform API — Complete Collection (All 13 Controllers)",
+		"description": "Production Postman Collection containing all API endpoints across the Kaldar Laundry & Dry Cleaning Monorepo.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"auth": {
@@ -23,128 +23,334 @@
 		},
 		{
 			"key": "jwt_token",
-			"value": "YOUR_CUSTOMER_JWT_TOKEN_HERE",
+			"value": "YOUR_JWT_TOKEN_HERE",
 			"type": "string"
 		}
 	],
 	"item": [
 		{
-			"name": "1. Authentication",
+			"name": "1. Authentication & OTP",
 			"item": [
 				{
-					"name": "Login (Customer / Admin)",
+					"name": "POST User Login",
 					"request": {
 						"auth": { "type": "noauth" },
 						"method": "POST",
-						"header": [
-							{ "key": "Content-Type", "value": "application/json" }
-						],
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
 						"body": {
 							"mode": "raw",
 							"raw": "{\n  \"email\": \"customer@kaldar.com\",\n  \"password\": \"Password123!\"\n}"
 						},
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/auth/login",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "auth", "login"]
-						}
+						"url": { "raw": "{{baseUrl}}/api/v1/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "v1", "auth", "login"] }
+					}
+				},
+				{
+					"name": "POST Verify OTP",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"customer@kaldar.com\",\n  \"otpInput\": \"123456\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/api/v1/auth/verify-otp", "host": ["{{baseUrl}}"], "path": ["api", "v1", "auth", "verify-otp"] }
+					}
+				},
+				{
+					"name": "POST Resend OTP",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"customer@kaldar.com\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/api/v1/auth/resend-otp", "host": ["{{baseUrl}}"], "path": ["api", "v1", "auth", "resend-otp"] }
+					}
+				},
+				{
+					"name": "POST Forgot Password",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"customer@kaldar.com\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/api/v1/auth/forgot_password", "host": ["{{baseUrl}}"], "path": ["api", "v1", "auth", "forgot_password"] }
+					}
+				},
+				{
+					"name": "POST Reset Password",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"customer@kaldar.com\",\n  \"resetToken\": \"TOKEN123\",\n  \"newPassword\": \"NewPassword123!\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/api/v1/auth/reset_password", "host": ["{{baseUrl}}"], "path": ["api", "v1", "auth", "reset_password"] }
 					}
 				}
 			]
 		},
 		{
-			"name": "2. Customer Wallet",
+			"name": "2. Customer Module",
+			"item": [
+				{
+					"name": "POST Register Customer",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"Password123!\",\n  \"phoneNumber\": \"+2348012345678\",\n  \"address\": \"15 Victoria Island, Lagos\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/api/v1/customer/register", "host": ["{{baseUrl}}"], "path": ["api", "v1", "customer", "register"] }
+					}
+				},
+				{
+					"name": "PUT Update Profile",
+					"request": {
+						"method": "PUT",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Updated\",\n  \"phoneNumber\": \"+2348012345678\",\n  \"address\": \"20 Lekki Phase 1, Lagos\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/api/v1/customer/updated_customer_profile", "host": ["{{baseUrl}}"], "path": ["api", "v1", "customer", "updated_customer_profile"] }
+					}
+				},
+				{
+					"name": "GET Customer Profile",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/api/v1/customer/1", "host": ["{{baseUrl}}"], "path": ["api", "v1", "customer", "1"] }
+					}
+				},
+				{
+					"name": "PUT Change Password",
+					"request": {
+						"method": "PUT",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"oldPassword\": \"Password123!\",\n  \"newPassword\": \"NewPassword123!\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/api/v1/customer/change_password", "host": ["{{baseUrl}}"], "path": ["api", "v1", "customer", "change_password"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "3. Dry Cleaner Module",
+			"item": [
+				{
+					"name": "POST Register Dry Cleaner",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"businessName\": \"Clean & Fresh\",\n  \"email\": \"store@cleanfresh.com\",\n  \"password\": \"Password123!\",\n  \"phoneNumber\": \"+2348087654321\",\n  \"address\": \"Lekki, Lagos\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/api/v1/drycleaner/drycleaner/register", "host": ["{{baseUrl}}"], "path": ["api", "v1", "drycleaner", "drycleaner", "register"] }
+					}
+				},
+				{
+					"name": "GET Verification Status",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/api/v1/drycleaner/drycleaner/1/verification-status", "host": ["{{baseUrl}}"], "path": ["api", "v1", "drycleaner", "drycleaner", "1", "verification-status"] }
+					}
+				},
+				{
+					"name": "GET Services List",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/api/v1/drycleaner/drycleaner/1/services", "host": ["{{baseUrl}}"], "path": ["api", "v1", "drycleaner", "drycleaner", "1", "services"] }
+					}
+				},
+				{
+					"name": "POST Add/Update Service",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"serviceName\": \"Suit Cleaning (2 piece)\",\n  \"price\": 3500.00\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/api/v1/drycleaner/drycleaner/1/services", "host": ["{{baseUrl}}"], "path": ["api", "v1", "drycleaner", "drycleaner", "1", "services"] }
+					}
+				},
+				{
+					"name": "GET Onboarding Status",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/api/v1/drycleaner/drycleaner/1/onboarding-status", "host": ["{{baseUrl}}"], "path": ["api", "v1", "drycleaner", "drycleaner", "1", "onboarding-status"] }
+					}
+				},
+				{
+					"name": "GET Store Analytics",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{baseUrl}}/api/v1/drycleaner/drycleaner/1/analytics?period=today", "host": ["{{baseUrl}}"], "path": ["api", "v1", "drycleaner", "drycleaner", "1", "analytics"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "4. Discovery",
+			"item": [
+				{
+					"name": "POST Search Available Dry Cleaners Nearby",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"lat\": 6.4531,\n  \"lng\": 3.3958,\n  \"radiusKm\": 10.0,\n  \"openNow\": true\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/api/v1/drycleaners/available", "host": ["{{baseUrl}}"], "path": ["api", "v1", "drycleaners", "available"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "5. Order & Review",
+			"item": [
+				{
+					"name": "POST Place Order",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"customerId\": 1,\n  \"dryCleanerId\": 1,\n  \"pickupAddress\": \"Lagos\",\n  \"deliveryAddress\": \"Lagos\",\n  \"serviceItems\": [\n    { \"serviceOfferingId\": 1, \"quantity\": 2 }\n  ]\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/api/v1/order", "host": ["{{baseUrl}}"], "path": ["api", "v1", "order"] }
+					}
+				},
+				{
+					"name": "POST Accept Order (DryCleaner)",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"orderId\": 1,\n  \"dryCleanerId\": 1\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/api/v1/order/accept", "host": ["{{baseUrl}}"], "path": ["api", "v1", "order", "accept"] }
+					}
+				},
+				{
+					"name": "POST Reject Order (DryCleaner)",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"orderId\": 1,\n  \"dryCleanerId\": 1,\n  \"reason\": \"Out of capacity\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/api/v1/order/reject", "host": ["{{baseUrl}}"], "path": ["api", "v1", "order", "reject"] }
+					}
+				},
+				{
+					"name": "PATCH Update Order Status",
+					"request": {
+						"method": "PATCH",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"orderId\": 1,\n  \"status\": \"IN_PROGRESS\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/api/v1/order/status", "host": ["{{baseUrl}}"], "path": ["api", "v1", "order", "status"] }
+					}
+				},
+				{
+					"name": "POST Submit Review",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"orderId\": 1,\n  \"customerId\": 1,\n  \"dryCleanerId\": 1,\n  \"rating\": 5,\n  \"comment\": \"Great service!\"\n}"
+						},
+						"url": { "raw": "{{baseUrl}}/api/v1/order/review", "host": ["{{baseUrl}}"], "path": ["api", "v1", "order", "review"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "6. Customer Wallet",
 			"item": [
 				{
 					"name": "GET Wallet Balance",
 					"request": {
 						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/wallet/balance",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "wallet", "balance"]
-						}
+						"url": { "raw": "{{baseUrl}}/api/v1/wallet/balance", "host": ["{{baseUrl}}"], "path": ["api", "v1", "wallet", "balance"] }
 					}
 				},
 				{
-					"name": "GET Wallet Summary (History)",
+					"name": "GET Wallet Summary",
 					"request": {
 						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/wallet/1/summary",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "wallet", "1", "summary"]
-						}
+						"url": { "raw": "{{baseUrl}}/api/v1/wallet/1/summary", "host": ["{{baseUrl}}"], "path": ["api", "v1", "wallet", "1", "summary"] }
 					}
 				},
 				{
 					"name": "POST Credit Wallet (Internal)",
 					"request": {
 						"method": "POST",
-						"header": [
-							{ "key": "Content-Type", "value": "application/json" }
-						],
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"userId\": 1,\n  \"amount\": 5000.00,\n  \"description\": \"Manual top-up test\",\n  \"reference\": \"MANUAL-REF-001\"\n}"
+							"raw": "{\n  \"userId\": 1,\n  \"amount\": 5000.00,\n  \"description\": \"Top up\",\n  \"reference\": \"REF001\"\n}"
 						},
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/wallet/credit",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "wallet", "credit"]
-						}
+						"url": { "raw": "{{baseUrl}}/api/v1/wallet/credit", "host": ["{{baseUrl}}"], "path": ["api", "v1", "wallet", "credit"] }
 					}
 				},
 				{
 					"name": "POST Debit Wallet (Internal)",
 					"request": {
 						"method": "POST",
-						"header": [
-							{ "key": "Content-Type", "value": "application/json" }
-						],
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"userId\": 1,\n  \"amount\": 1500.00,\n  \"description\": \"Order payment test\",\n  \"reference\": \"ORD-DEBIT-001\"\n}"
+							"raw": "{\n  \"userId\": 1,\n  \"amount\": 1500.00,\n  \"description\": \"Order debit\",\n  \"reference\": \"REF002\"\n}"
 						},
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/wallet/debit",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "wallet", "debit"]
-						}
+						"url": { "raw": "{{baseUrl}}/api/v1/wallet/debit", "host": ["{{baseUrl}}"], "path": ["api", "v1", "wallet", "debit"] }
 					}
 				}
 			]
 		},
 		{
-			"name": "3. Payment (Paystack)",
+			"name": "7. Payment (Paystack)",
 			"item": [
 				{
 					"name": "POST Initiate Payment",
 					"request": {
 						"method": "POST",
-						"header": [
-							{ "key": "Content-Type", "value": "application/json" }
-						],
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
 						"body": {
 							"mode": "raw",
 							"raw": "{\n  \"amount\": 5000.00\n}"
 						},
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/payment/initiate",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "payment", "initiate"]
-						}
+						"url": { "raw": "{{baseUrl}}/api/v1/payment/initiate", "host": ["{{baseUrl}}"], "path": ["api", "v1", "payment", "initiate"] }
 					}
 				},
 				{
 					"name": "GET Payment History",
 					"request": {
 						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/payment/history",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "payment", "history"]
-						}
+						"url": { "raw": "{{baseUrl}}/api/v1/payment/history", "host": ["{{baseUrl}}"], "path": ["api", "v1", "payment", "history"] }
 					}
 				},
 				{
@@ -154,171 +360,101 @@
 						"method": "POST",
 						"header": [
 							{ "key": "Content-Type", "value": "application/json" },
-							{ "key": "x-paystack-signature", "value": "SIGNATURE_HASH_HERE" }
+							{ "key": "x-paystack-signature", "value": "SIGNATURE" }
 						],
 						"body": {
 							"mode": "raw",
 							"raw": "{\n  \"event\": \"charge.success\",\n  \"data\": {\n    \"reference\": \"KLD-XXXXXXXXXXXX\",\n    \"status\": \"success\",\n    \"amount\": 500000,\n    \"channel\": \"card\",\n    \"gateway_response\": \"Successful\"\n  }\n}"
 						},
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/payment/webhook",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "payment", "webhook"]
-						}
+						"url": { "raw": "{{baseUrl}}/api/v1/payment/webhook", "host": ["{{baseUrl}}"], "path": ["api", "v1", "payment", "webhook"] }
 					}
 				}
 			]
 		},
 		{
-			"name": "4. Favorites",
+			"name": "8. Favorites",
 			"item": [
 				{
-					"name": "GET Saved Favourites",
+					"name": "GET Favourites",
 					"request": {
 						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/favorites",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "favorites"]
-						}
+						"url": { "raw": "{{baseUrl}}/api/v1/favorites", "host": ["{{baseUrl}}"], "path": ["api", "v1", "favorites"] }
 					}
 				},
 				{
-					"name": "POST Add to Favourites",
+					"name": "POST Add Favourite",
 					"request": {
 						"method": "POST",
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/favorites/1",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "favorites", "1"]
-						}
+						"url": { "raw": "{{baseUrl}}/api/v1/favorites/1", "host": ["{{baseUrl}}"], "path": ["api", "v1", "favorites", "1"] }
 					}
 				},
 				{
-					"name": "DELETE Remove from Favourites",
+					"name": "DELETE Remove Favourite",
 					"request": {
 						"method": "DELETE",
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/favorites/1",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "favorites", "1"]
-						}
+						"url": { "raw": "{{baseUrl}}/api/v1/favorites/1", "host": ["{{baseUrl}}"], "path": ["api", "v1", "favorites", "1"] }
 					}
 				}
 			]
 		},
 		{
-			"name": "5. Notifications",
+			"name": "9. Notifications",
 			"item": [
 				{
-					"name": "GET Notifications (Paginated)",
+					"name": "GET Notifications List",
 					"request": {
 						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/notifications?page=0&limit=10",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "notifications"],
-							"query": [
-								{ "key": "page", "value": "0" },
-								{ "key": "limit", "value": "10" },
-								{ "key": "type", "value": "ORDER_UPDATE", "disabled": true },
-								{ "key": "read", "value": "false", "disabled": true }
-							]
-						}
+						"url": { "raw": "{{baseUrl}}/api/v1/notifications?page=0&limit=10", "host": ["{{baseUrl}}"], "path": ["api", "v1", "notifications"] }
 					}
 				},
 				{
-					"name": "PATCH Toggle Notification Read Status",
+					"name": "PATCH Toggle Notification Read",
 					"request": {
 						"method": "PATCH",
-						"header": [
-							{ "key": "Content-Type", "value": "application/json" }
-						],
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
 						"body": {
 							"mode": "raw",
 							"raw": "{\n  \"isRead\": true\n}"
 						},
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/notifications/1/read",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "notifications", "1", "read"]
-						}
+						"url": { "raw": "{{baseUrl}}/api/v1/notifications/1/read", "host": ["{{baseUrl}}"], "path": ["api", "v1", "notifications", "1", "read"] }
 					}
 				},
 				{
 					"name": "DELETE Single Notification",
 					"request": {
 						"method": "DELETE",
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/notifications/1",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "notifications", "1"]
-						}
+						"url": { "raw": "{{baseUrl}}/api/v1/notifications/1", "host": ["{{baseUrl}}"], "path": ["api", "v1", "notifications", "1"] }
 					}
 				},
 				{
-					"name": "POST Bulk Mark Notifications Read",
+					"name": "POST Bulk Mark Read",
 					"request": {
 						"method": "POST",
-						"header": [
-							{ "key": "Content-Type", "value": "application/json" }
-						],
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
 						"body": {
 							"mode": "raw",
 							"raw": "{\n  \"ids\": [1, 2, 3]\n}"
 						},
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/notifications/bulk/read",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "notifications", "bulk", "read"]
-						}
+						"url": { "raw": "{{baseUrl}}/api/v1/notifications/bulk/read", "host": ["{{baseUrl}}"], "path": ["api", "v1", "notifications", "bulk", "read"] }
 					}
 				},
 				{
-					"name": "POST Bulk Mark Notifications Unread",
+					"name": "POST Bulk Delete",
 					"request": {
 						"method": "POST",
-						"header": [
-							{ "key": "Content-Type", "value": "application/json" }
-						],
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
 						"body": {
 							"mode": "raw",
 							"raw": "{\n  \"ids\": [1, 2, 3]\n}"
 						},
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/notifications/bulk/unread",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "notifications", "bulk", "unread"]
-						}
+						"url": { "raw": "{{baseUrl}}/api/v1/notifications/bulk/delete", "host": ["{{baseUrl}}"], "path": ["api", "v1", "notifications", "bulk", "delete"] }
 					}
 				},
 				{
-					"name": "POST Bulk Delete Notifications",
+					"name": "POST Mark All Read",
 					"request": {
 						"method": "POST",
-						"header": [
-							{ "key": "Content-Type", "value": "application/json" }
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"ids\": [1, 2, 3]\n}"
-						},
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/notifications/bulk/delete",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "notifications", "bulk", "delete"]
-						}
-					}
-				},
-				{
-					"name": "POST Mark All Notifications Read",
-					"request": {
-						"method": "POST",
-						"url": {
-							"raw": "{{baseUrl}}/api/v1/notifications/read-all",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "v1", "notifications", "read-all"]
-						}
+						"url": { "raw": "{{baseUrl}}/api/v1/notifications/read-all", "host": ["{{baseUrl}}"], "path": ["api", "v1", "notifications", "read-all"] }
 					}
 				}
 			]
