@@ -1,4 +1,5 @@
 package com.kaldar.kaldar.drycleaner.application.service.impl;
+
 import com.kaldar.kaldar.shared.domain.constants.Role;
 import com.kaldar.kaldar.customer.domain.model.CustomerEntity;
 import com.kaldar.kaldar.drycleaner.domain.model.DryCleanerEntity;
@@ -37,15 +38,16 @@ public class DefaultDryCleanerService implements DryCleanerService {
     private final com.kaldar.kaldar.drycleaner.domain.repository.BusinessVerificationRepository businessVerificationRepository;
     private final com.kaldar.kaldar.order.domain.repository.ReviewRepository reviewRepository;
 
-
-    public DefaultDryCleanerService(DryCleanerEntityRepository dryCleanerEntityRepository, PasswordEncoder passwordEncoder,
-                                    VerificationTokenRepository verificationTokenRepository, EmailService emailService,
-                                    @Value("${security.otp.digit}")int otpDigits,
-                                    @Value("${security.otp.expiry-minutes}")int expiredOtpMin, CustomerEntityRepository customerEntityRepository,
-                                    com.kaldar.kaldar.order.domain.repository.OrderEntityRepository orderEntityRepository,
-                                    com.kaldar.kaldar.drycleaner.domain.repository.ServiceOfferingRepository serviceOfferingRepository,
-                                    com.kaldar.kaldar.drycleaner.domain.repository.BusinessVerificationRepository businessVerificationRepository,
-                                    com.kaldar.kaldar.order.domain.repository.ReviewRepository reviewRepository) {
+    public DefaultDryCleanerService(DryCleanerEntityRepository dryCleanerEntityRepository,
+            PasswordEncoder passwordEncoder,
+            VerificationTokenRepository verificationTokenRepository, EmailService emailService,
+            @Value("${security.otp.digit}") int otpDigits,
+            @Value("${security.otp.expiry-minutes}") int expiredOtpMin,
+            CustomerEntityRepository customerEntityRepository,
+            com.kaldar.kaldar.order.domain.repository.OrderEntityRepository orderEntityRepository,
+            com.kaldar.kaldar.drycleaner.domain.repository.ServiceOfferingRepository serviceOfferingRepository,
+            com.kaldar.kaldar.drycleaner.domain.repository.BusinessVerificationRepository businessVerificationRepository,
+            com.kaldar.kaldar.order.domain.repository.ReviewRepository reviewRepository) {
         this.dryCleanerEntityRepository = dryCleanerEntityRepository;
         this.passwordEncoder = passwordEncoder;
         this.verificationTokenRepository = verificationTokenRepository;
@@ -60,7 +62,8 @@ public class DefaultDryCleanerService implements DryCleanerService {
     }
 
     @Override
-    public java.util.List<com.kaldar.kaldar.drycleaner.application.dto.response.ServiceOfferingResponse> getServices(Long dryCleanerId) {
+    public java.util.List<com.kaldar.kaldar.drycleaner.application.dto.response.ServiceOfferingResponse> getServices(
+            Long dryCleanerId) {
         return serviceOfferingRepository.findByDryCleanerId(dryCleanerId).stream()
                 .map(this::mapToServiceOfferingResponse)
                 .collect(java.util.stream.Collectors.toList());
@@ -68,7 +71,8 @@ public class DefaultDryCleanerService implements DryCleanerService {
 
     @Override
     @org.springframework.transaction.annotation.Transactional
-    public com.kaldar.kaldar.drycleaner.application.dto.response.ServiceOfferingResponse addOrUpdateService(Long dryCleanerId, com.kaldar.kaldar.drycleaner.application.dto.request.ServiceOfferingRequest request) {
+    public com.kaldar.kaldar.drycleaner.application.dto.response.ServiceOfferingResponse addOrUpdateService(
+            Long dryCleanerId, com.kaldar.kaldar.drycleaner.application.dto.request.ServiceOfferingRequest request) {
         DryCleanerEntity dryCleaner = dryCleanerEntityRepository.findById(dryCleanerId)
                 .orElseThrow(() -> new UserNotFoundException(DRY_CLEANER_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
 
@@ -87,7 +91,8 @@ public class DefaultDryCleanerService implements DryCleanerService {
         return mapToServiceOfferingResponse(saved);
     }
 
-    private com.kaldar.kaldar.drycleaner.application.dto.response.ServiceOfferingResponse mapToServiceOfferingResponse(com.kaldar.kaldar.drycleaner.domain.model.ServiceOffering offering) {
+    private com.kaldar.kaldar.drycleaner.application.dto.response.ServiceOfferingResponse mapToServiceOfferingResponse(
+            com.kaldar.kaldar.drycleaner.domain.model.ServiceOffering offering) {
         com.kaldar.kaldar.drycleaner.application.dto.response.ServiceOfferingResponse resp = new com.kaldar.kaldar.drycleaner.application.dto.response.ServiceOfferingResponse();
         resp.setId(offering.getId());
         resp.setServiceName(offering.getServiceName());
@@ -97,7 +102,8 @@ public class DefaultDryCleanerService implements DryCleanerService {
     }
 
     @Override
-    public SendVerificationEmailResponse registerDryCleaner(DryCleanerRegistrationRequest dryCleanerRegistrationRequest) {
+    public SendVerificationEmailResponse registerDryCleaner(
+            DryCleanerRegistrationRequest dryCleanerRegistrationRequest) {
         validateDryCleanerEmailExist(dryCleanerRegistrationRequest.getEmail());
         validateDryCleanerBusinessEmailExist(dryCleanerRegistrationRequest.getBusinessEmail());
         DryCleanerEntity dryCleanerEntity = buildDryCleanerEntityInstance(dryCleanerRegistrationRequest);
@@ -109,7 +115,8 @@ public class DefaultDryCleanerService implements DryCleanerService {
         LocalDateTime expiredAt = LocalDateTime.now().plusMinutes(expiredOtpMin);
         VerificationToken verificationToken = buildVerificationToken(hashPlainOtpDigits, expiredAt, dryCleanerEntity);
         verificationTokenRepository.save(verificationToken);
-        SendVerificationEmailResponse sendVerificationEmailResponse = emailService.sendVerificationEmail(dryCleanerEntity.getEmail(), otpDigitNumberGenerator);
+        SendVerificationEmailResponse sendVerificationEmailResponse = emailService
+                .sendVerificationEmail(dryCleanerEntity.getEmail(), otpDigitNumberGenerator);
         sendVerificationEmailResponse.setEmail(dryCleanerEntity.getEmail());
         sendVerificationEmailResponse.setExpiresAt(expiredAt.toString());
         sendVerificationEmailResponse.setVerificationMessage(VERIFICATION_TOKEN_SENT_MESSAGE.getMessage());
@@ -119,15 +126,17 @@ public class DefaultDryCleanerService implements DryCleanerService {
     @Override
     @org.springframework.transaction.annotation.Transactional
     public DryCleanerProfileResponse editProfile(UpdateDryCleanerProfileRequest updateDryCleanerProfileRequest) {
-        DryCleanerEntity dryCleanerEntity = dryCleanerEntityRepository.findById(updateDryCleanerProfileRequest.getDryCleanerId())
-                .orElseThrow(()-> new UserNotFoundException(DRY_CLEANER_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
+        DryCleanerEntity dryCleanerEntity = dryCleanerEntityRepository
+                .findById(updateDryCleanerProfileRequest.getDryCleanerId())
+                .orElseThrow(() -> new UserNotFoundException(DRY_CLEANER_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
         mapDyrCleanerProfileUpdateRequest(updateDryCleanerProfileRequest, dryCleanerEntity);
         DryCleanerProfileResponse dryCleanerProfileResponse = new DryCleanerProfileResponse();
         dryCleanerProfileResponse.setMessage(DRY_CLEANER_PROFILE_UPDATED_SUCCESS_MESSAGE.getMessage());
-        return  dryCleanerProfileResponse;
+        return dryCleanerProfileResponse;
     }
 
-    private static void mapDyrCleanerProfileUpdateRequest(UpdateDryCleanerProfileRequest updateDryCleanerProfileRequest, DryCleanerEntity dryCleanerEntity) {
+    private static void mapDyrCleanerProfileUpdateRequest(UpdateDryCleanerProfileRequest updateDryCleanerProfileRequest,
+            DryCleanerEntity dryCleanerEntity) {
         dryCleanerEntity.setFirstName(updateDryCleanerProfileRequest.getFirstName());
         dryCleanerEntity.setLastName(updateDryCleanerProfileRequest.getLastName());
         dryCleanerEntity.setBusinessName(updateDryCleanerProfileRequest.getBusinessName());
@@ -137,7 +146,7 @@ public class DefaultDryCleanerService implements DryCleanerService {
     }
 
     private static @NotNull VerificationToken buildVerificationToken(String hashPlainOtpDigits, LocalDateTime expiredAt,
-                                                                     DryCleanerEntity dryCleanerEntity) {
+            DryCleanerEntity dryCleanerEntity) {
         VerificationToken verificationToken = new VerificationToken();
         verificationToken.setToken(hashPlainOtpDigits);
         verificationToken.setExpiredAt(expiredAt);
@@ -148,12 +157,14 @@ public class DefaultDryCleanerService implements DryCleanerService {
     private String generateOtp(int otpDigits) {
         StringBuilder stringBuilder = new StringBuilder();
         SecureRandom secureRandom = new SecureRandom();
-        for (int index = 0; index < otpDigits; index++){
+        for (int index = 0; index < otpDigits; index++) {
             stringBuilder.append(secureRandom.nextInt(10));
         }
         return stringBuilder.toString();
     }
-    private static DryCleanerEntity buildDryCleanerEntityInstance(DryCleanerRegistrationRequest dryCleanerRegistrationRequest) {
+
+    private static DryCleanerEntity buildDryCleanerEntityInstance(
+            DryCleanerRegistrationRequest dryCleanerRegistrationRequest) {
         DryCleanerEntity dryCleanerEntity = new DryCleanerEntity();
         dryCleanerEntity.setFirstName(dryCleanerRegistrationRequest.getFirstName());
         dryCleanerEntity.setLastName(dryCleanerRegistrationRequest.getLastName());
@@ -164,17 +175,23 @@ public class DefaultDryCleanerService implements DryCleanerService {
         dryCleanerEntity.getRoles().add(Role.DRY_CLEANER);
         return dryCleanerEntity;
     }
+
     private void validateDryCleanerBusinessEmailExist(String businessEmail) {
         boolean isDryCleanerBusinessEmailExist = dryCleanerEntityRepository.existsByEmail(businessEmail);
-        if (isDryCleanerBusinessEmailExist)throw new DryCleanerBusinessEmailExistException("Business email already exists");
+        if (isDryCleanerBusinessEmailExist)
+            throw new DryCleanerBusinessEmailExistException("Business email already exists");
     }
+
     private void validateDryCleanerEmailExist(String email) {
         boolean isEmailExist = dryCleanerEntityRepository.existsByEmail(email);
-        if (isEmailExist)throw new DryCleanerEmailAlreadyExistException("DryCleaner with this email already exists");
+        if (isEmailExist)
+            throw new DryCleanerEmailAlreadyExistException("DryCleaner with this email already exists");
     }
+
     @Override
     @org.springframework.transaction.annotation.Transactional
-    public void updatePayoutAccount(Long dryCleanerId, String accountName, String accountNumber, String bankCode, String bankName) {
+    public void updatePayoutAccount(Long dryCleanerId, String accountName, String accountNumber, String bankCode,
+            String bankName) {
         DryCleanerEntity dryCleaner = dryCleanerEntityRepository.findById(dryCleanerId)
                 .orElseThrow(() -> new UserNotFoundException(DRY_CLEANER_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
         dryCleaner.setAccountName(accountName);
@@ -196,23 +213,26 @@ public class DefaultDryCleanerService implements DryCleanerService {
     }
 
     @Override
-    public com.kaldar.kaldar.drycleaner.application.dto.response.OnboardingStatusResponse getOnboardingStatus(Long dryCleanerId) {
+    public com.kaldar.kaldar.drycleaner.application.dto.response.OnboardingStatusResponse getOnboardingStatus(
+            Long dryCleanerId) {
         DryCleanerEntity dryCleaner = dryCleanerEntityRepository.findById(dryCleanerId)
                 .orElseThrow(() -> new UserNotFoundException(DRY_CLEANER_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
 
         com.kaldar.kaldar.drycleaner.application.dto.response.OnboardingStatusResponse status = new com.kaldar.kaldar.drycleaner.application.dto.response.OnboardingStatusResponse();
-        
+
         status.setBusinessVerified(businessVerificationRepository.findByDryCleanerId(dryCleanerId).isPresent());
         status.setStoreProfileSetup(dryCleaner.getBusinessName() != null && !dryCleaner.getBusinessName().isEmpty());
         status.setPayoutAccountAdded(dryCleaner.getAccountNumber() != null);
         status.setBusinessOperationsSetup(dryCleaner.getWorkingHours() != null);
-        status.setStoreInventorySetup(dryCleaner.getServiceOfferings() != null && !dryCleaner.getServiceOfferings().isEmpty());
+        status.setStoreInventorySetup(
+                dryCleaner.getServiceOfferings() != null && !dryCleaner.getServiceOfferings().isEmpty());
 
         return status;
     }
 
     @Override
-    public com.kaldar.kaldar.drycleaner.application.dto.response.AnalyticsResponse getAnalytics(Long dryCleanerId, String period) {
+    public com.kaldar.kaldar.drycleaner.application.dto.response.AnalyticsResponse getAnalytics(Long dryCleanerId,
+            String period) {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime startDate = switch (period.toLowerCase()) {
             case "today" -> now.withHour(0).withMinute(0).withSecond(0).withNano(0);
@@ -222,21 +242,24 @@ public class DefaultDryCleanerService implements DryCleanerService {
         };
 
         // Fetch all orders for the dry cleaner and filter by period
-        java.util.List<com.kaldar.kaldar.order.domain.model.OrderEntity> orders = orderEntityRepository.findByDryCleanerIdOrderByCreatedAtDesc(dryCleanerId).stream()
-                .filter(o -> o.getCreatedAt() != null && (o.getCreatedAt().isAfter(startDate) || o.getCreatedAt().isEqual(startDate)))
+        java.util.List<com.kaldar.kaldar.order.domain.model.OrderEntity> orders = orderEntityRepository
+                .findByDryCleanerIdOrderByCreatedAtDesc(dryCleanerId).stream()
+                .filter(o -> o.getCreatedAt() != null
+                        && (o.getCreatedAt().isAfter(startDate) || o.getCreatedAt().isEqual(startDate)))
                 .collect(java.util.stream.Collectors.toList());
-        
+
         // Calculate revenue
         java.math.BigDecimal revenue = orders.stream()
-                .map(order -> java.math.BigDecimal.valueOf(order.getTotalAmount() != null ? order.getTotalAmount() : 0.0))
+                .map(order -> java.math.BigDecimal
+                        .valueOf(order.getTotalAmount() != null ? order.getTotalAmount() : 0.0))
                 .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
-        
+
         // Calculate average rating
         Double avgRating = reviewRepository.findByDryCleanerIdOrderByCreatedAtDesc(dryCleanerId).stream()
                 .mapToDouble(com.kaldar.kaldar.order.domain.model.ReviewEntity::getRating)
                 .average()
                 .orElse(0.0);
-        
+
         return new com.kaldar.kaldar.drycleaner.application.dto.response.AnalyticsResponse(
                 revenue,
                 "+12.5%", // Mock change
@@ -248,7 +271,8 @@ public class DefaultDryCleanerService implements DryCleanerService {
     }
 
     @Override
-    public com.kaldar.kaldar.drycleaner.application.dto.response.AnalyticsResponse findDrycleanerByBusinessName(String businessName) {
+    public com.kaldar.kaldar.drycleaner.application.dto.response.AnalyticsResponse findDrycleanerByBusinessName(
+            String businessName) {
         // Find by business name and return analytics (as defined by interface type)
         java.util.List<DryCleanerEntity> list = dryCleanerEntityRepository.findAll();
         for (DryCleanerEntity d : list) {

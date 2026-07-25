@@ -140,6 +140,23 @@ public class GlobalApplicationExceptionHandler {
     }
 
     /**
+     * Handle KaldarBusinessException and its subclasses
+     * (e.g. FavouriteAlreadyExistsException, NotificationNotFoundException).
+     * The HTTP status is carried by the exception itself.
+     */
+    @ExceptionHandler(KaldarBusinessException.class)
+    public ResponseEntity<ApiErrorResponse> handleKaldarBusinessException(
+            KaldarBusinessException exception, HttpServletRequest request) {
+        ApiErrorResponse apiErrorResponse = buildErrorResponse(
+                exception.getMessage(),
+                exception.getHttpStatus(),
+                request.getRequestURI(),
+                null
+        );
+        return ResponseEntity.status(exception.getHttpStatus()).body(apiErrorResponse);
+    }
+
+    /**
      * Handle file upload failures (wrong file type, Cloudinary I/O error, etc.).
      */
     @ExceptionHandler(FileUploadException.class)

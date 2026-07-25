@@ -1,4 +1,5 @@
 package com.kaldar.kaldar.order.application.service.impl;
+
 import com.kaldar.kaldar.shared.domain.constants.OrderStatus;
 import com.kaldar.kaldar.customer.domain.model.CustomerEntity;
 import com.kaldar.kaldar.customer.domain.repository.CustomerEntityRepository;
@@ -28,13 +29,13 @@ import java.time.LocalDateTime;
 import java.util.*;
 import static com.kaldar.kaldar.shared.domain.constants.StatusResponse.*;
 
-
 @Service
 public class DefaultOrderService implements OrderService {
 
     private static final Map<OrderStatus, Set<OrderStatus>> ALLOWED_TRANSITIONS = new EnumMap<>(OrderStatus.class);
     static {
-        ALLOWED_TRANSITIONS.put(OrderStatus.PENDING_ACCEPTANCE, Set.of(OrderStatus.ACCEPTED, OrderStatus.REJECTED, OrderStatus.CANCELLED));
+        ALLOWED_TRANSITIONS.put(OrderStatus.PENDING_ACCEPTANCE,
+                Set.of(OrderStatus.ACCEPTED, OrderStatus.REJECTED, OrderStatus.CANCELLED));
         ALLOWED_TRANSITIONS.put(OrderStatus.ACCEPTED, Set.of(OrderStatus.SCHEDULED));
         ALLOWED_TRANSITIONS.put(OrderStatus.SCHEDULED, Set.of(OrderStatus.PICKED, OrderStatus.PICKED_UP));
         ALLOWED_TRANSITIONS.put(OrderStatus.PICKED, Set.of(OrderStatus.CLEANING));
@@ -51,7 +52,6 @@ public class DefaultOrderService implements OrderService {
         ALLOWED_TRANSITIONS.put(OrderStatus.CREATED, Set.of(OrderStatus.PENDING_ACCEPTANCE));
     }
 
-
     private static final Logger log = LoggerFactory.getLogger(OrderService.class);
     private final CustomerEntityRepository customerEntityRepository;
     private final DryCleanerEntityRepository dryCleanerEntityRepository;
@@ -62,10 +62,11 @@ public class DefaultOrderService implements OrderService {
     private final com.kaldar.kaldar.order.domain.repository.ReviewRepository reviewRepository;
 
     public DefaultOrderService(CustomerEntityRepository customerEntityRepository,
-                               DryCleanerEntityRepository dryCleanerEntityRepository,
-                               ServiceOfferingRepository serviceOfferingRepository,
-                               OrderEntityRepository orderEntityRepository, OrderServiceItemRepository orderServiceItemRepository, ApplicationEventPublisher applicationEventPublisher,
-                               com.kaldar.kaldar.order.domain.repository.ReviewRepository reviewRepository) {
+            DryCleanerEntityRepository dryCleanerEntityRepository,
+            ServiceOfferingRepository serviceOfferingRepository,
+            OrderEntityRepository orderEntityRepository, OrderServiceItemRepository orderServiceItemRepository,
+            ApplicationEventPublisher applicationEventPublisher,
+            com.kaldar.kaldar.order.domain.repository.ReviewRepository reviewRepository) {
         this.customerEntityRepository = customerEntityRepository;
         this.dryCleanerEntityRepository = dryCleanerEntityRepository;
         this.serviceOfferingRepository = serviceOfferingRepository;
@@ -79,18 +80,18 @@ public class DefaultOrderService implements OrderService {
     @Override
     public AcceptOrderResponse acceptOrder(AcceptOrderRequest acceptOrderRequest) {
         DryCleanerEntity dryCleaner = dryCleanerEntityRepository.findById(acceptOrderRequest.getDryCleanerId())
-                .orElseThrow(()-> new UserNotFoundException(DRY_CLEANER_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
+                .orElseThrow(() -> new UserNotFoundException(DRY_CLEANER_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
         OrderEntity order = orderEntityRepository.findById(acceptOrderRequest.getOrderId())
-                .orElseThrow(()-> new OrdersNotFoundException(ORDERS_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
-        if (order.getDryCleaner() == null || !order.getDryCleaner().getId().equals(dryCleaner.getId())){
+                .orElseThrow(() -> new OrdersNotFoundException(ORDERS_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
+        if (order.getDryCleaner() == null || !order.getDryCleaner().getId().equals(dryCleaner.getId())) {
             throw new InvalidOrderAssignmentException("Order not assigned to this drycleaner");
         }
         if (order.getOrderStatus() != OrderStatus.PENDING_ACCEPTANCE)
             throw new InvalidOrderAssignmentException("Order cannot be accepted");
         if (!dryCleaner.isActive())
             throw new NoActiveDryCleanerException(dryCleaner.getId());
-        List<String> missingService = findMissingService(order,dryCleaner);
-        if (!missingService.isEmpty()){
+        List<String> missingService = findMissingService(order, dryCleaner);
+        if (!missingService.isEmpty()) {
             throw new MissingServicesNotEmptyException("Missing Service" + String.join(" ", missingService));
         }
         if (acceptOrderRequest.getPickupAt() != null) {
@@ -100,7 +101,8 @@ public class DefaultOrderService implements OrderService {
         }
         order.setOrderStatus(OrderStatus.ACCEPTED);
         OrderEntity orderEntity = orderEntityRepository.save(order);
-        applicationEventPublisher.publishEvent(new com.kaldar.kaldar.order.application.event.OrderAcceptedEvent(this, order.getId()));
+        applicationEventPublisher
+                .publishEvent(new com.kaldar.kaldar.order.application.event.OrderAcceptedEvent(this, order.getId()));
         AcceptOrderResponse acceptOrderResponse = new AcceptOrderResponse();
         acceptOrderResponse.setOrderId(order.getId());
         acceptOrderResponse.setStatus("ACCEPTED");
@@ -197,7 +199,8 @@ public class DefaultOrderService implements OrderService {
                 .orElseThrow(() -> new UserNotFoundException(DRY_CLEANER_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
     }
 
-    private static OrderEntity buildOrder(CreateOrderRequest request, CustomerEntity customer, DryCleanerEntity dryCleaner) {
+    private static OrderEntity buildOrder(CreateOrderRequest request, CustomerEntity customer,
+            DryCleanerEntity dryCleaner) {
         OrderEntity order = new OrderEntity();
         order.setCustomer(customer);
         if (dryCleaner != null) {
@@ -328,13 +331,14 @@ public class DefaultOrderService implements OrderService {
 
     @Override
     @Transactional
-    public com.kaldar.kaldar.order.application.dto.response.SubmitReviewResponse submitReview(com.kaldar.kaldar.order.application.dto.request.SubmitReviewRequest request) {
+    public com.kaldar.kaldar.order.application.dto.response.SubmitReviewResponse submitReview(
+            com.kaldar.kaldar.order.application.dto.request.SubmitReviewRequest request) {
         OrderEntity order = orderEntityRepository.findById(request.getOrderId())
                 .orElseThrow(() -> new OrdersNotFoundException(ORDERS_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
-        
+
         CustomerEntity customer = customerEntityRepository.findById(request.getCustomerId())
                 .orElseThrow(() -> new UserNotFoundException(CUSTOMER_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
-        
+
         DryCleanerEntity dryCleaner = dryCleanerEntityRepository.findById(request.getDryCleanerId())
                 .orElseThrow(() -> new UserNotFoundException(DRY_CLEANER_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
 
@@ -347,13 +351,15 @@ public class DefaultOrderService implements OrderService {
         review.setCreatedAt(LocalDateTime.now());
 
         com.kaldar.kaldar.order.domain.model.ReviewEntity saved = reviewRepository.save(review);
-        
-        return new com.kaldar.kaldar.order.application.dto.response.SubmitReviewResponse(saved.getId(), "Review submitted successfully");
+
+        return new com.kaldar.kaldar.order.application.dto.response.SubmitReviewResponse(saved.getId(),
+                "Review submitted successfully");
     }
 
     @Override
     @Transactional
-    public com.kaldar.kaldar.order.application.dto.response.RejectOrderResponse rejectOrder(com.kaldar.kaldar.order.application.dto.request.RejectOrderRequest request) {
+    public com.kaldar.kaldar.order.application.dto.response.RejectOrderResponse rejectOrder(
+            com.kaldar.kaldar.order.application.dto.request.RejectOrderRequest request) {
         OrderEntity order = orderEntityRepository.findById(request.getOrderId())
                 .orElseThrow(() -> new OrdersNotFoundException(ORDERS_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
 
@@ -365,7 +371,8 @@ public class DefaultOrderService implements OrderService {
         }
 
         if (order.getOrderStatus() != OrderStatus.PENDING_ACCEPTANCE) {
-            throw new InvalidOrderAssignmentException("Order cannot be rejected from current state: " + order.getOrderStatus());
+            throw new InvalidOrderAssignmentException(
+                    "Order cannot be rejected from current state: " + order.getOrderStatus());
         }
 
         order.setOrderStatus(OrderStatus.REJECTED);
@@ -373,6 +380,7 @@ public class DefaultOrderService implements OrderService {
         order.setUpdatedAt(LocalDateTime.now());
         orderEntityRepository.save(order);
 
-        return new com.kaldar.kaldar.order.application.dto.response.RejectOrderResponse(order.getId(), "REJECTED", LocalDateTime.now());
+        return new com.kaldar.kaldar.order.application.dto.response.RejectOrderResponse(order.getId(), "REJECTED",
+                LocalDateTime.now());
     }
 }

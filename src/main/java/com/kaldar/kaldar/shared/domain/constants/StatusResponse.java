@@ -21,7 +21,28 @@ public enum StatusResponse {
     ORDER_CREATED_SUCCESS_MESSAGE("Order created"),
     DRY_CLEANER_PROFILE_UPDATED_SUCCESS_MESSAGE("DryCleaner profile updated"),
     BUSINESS_VERIFICATION_SUBMITTED_MESSAGE("Business verification submitted successfully"),
-    BUSINESS_VERIFICATION_SUCCESS_MESSAGE("Business verified successfully");
+    BUSINESS_VERIFICATION_SUCCESS_MESSAGE("Business verified successfully"),
+
+    // Notification module
+    NOTIFICATION_NOT_FOUND("Notification not found"),
+    NOTIFICATION_DELETED("Notification deleted successfully"),
+    NOTIFICATION_READ_UPDATED("Notification read status updated"),
+    NOTIFICATIONS_BULK_UPDATED("Notifications updated successfully"),
+    NOTIFICATIONS_ALL_READ("All notifications marked as read"),
+
+    // Favourite module
+    FAVOURITE_ADDED("Dry cleaner added to favourites"),
+    FAVOURITE_REMOVED("Dry cleaner removed from favourites"),
+    FAVOURITE_ALREADY_EXISTS("Dry cleaner is already in your favourites"),
+    FAVOURITE_NOT_FOUND("Favourite not found"),
+
+    // Wallet module
+    WALLET_BALANCE_FETCHED("Wallet balance retrieved"),
+
+    // Payment module
+    PAYMENT_INITIATED("Payment initiated successfully"),
+    PAYMENT_WEBHOOK_RECEIVED("Webhook processed"),
+    PAYMENT_HISTORY_FETCHED("Payment history retrieved");
 
     private final    String message;
 

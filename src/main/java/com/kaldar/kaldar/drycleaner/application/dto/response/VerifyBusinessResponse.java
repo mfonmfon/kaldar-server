@@ -1,9 +1,8 @@
 package com.kaldar.kaldar.drycleaner.application.dto.response;
-
 import com.kaldar.kaldar.shared.domain.constants.BusinessType;
 import com.kaldar.kaldar.shared.domain.constants.VerificationStatus;
-
 import java.time.LocalDateTime;
+
 
 public class VerifyBusinessResponse {
 

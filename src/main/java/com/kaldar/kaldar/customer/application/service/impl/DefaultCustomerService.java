@@ -1,4 +1,5 @@
 package com.kaldar.kaldar.customer.application.service.impl;
+
 import com.kaldar.kaldar.shared.domain.constants.Role;
 import com.kaldar.kaldar.customer.domain.model.CustomerEntity;
 import com.kaldar.kaldar.shared.infrastructure.auth.domain.model.VerificationToken;
@@ -36,15 +37,15 @@ public class DefaultCustomerService implements CustomerService {
     private final VerificationTokenRepository verificationTokenRepository;
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
-    //Otp Configuration
+    // Otp Configuration
     private final int otpDigits;
     private final int otpExpiryMinutes;
 
     public DefaultCustomerService(CustomerEntityRepository customerEntityRepository, JwtService jwtService,
-                                  VerificationTokenRepository verificationTokenRepository, EmailService emailService,
-                                  PasswordEncoder passwordEncoder,
-                                  @Value("${security.otp.digit:6}") int otpDigits,
-                                  @Value("${security.otp.expiry-minutes:15}") int otpExpiryMinutes) {
+            VerificationTokenRepository verificationTokenRepository, EmailService emailService,
+            PasswordEncoder passwordEncoder,
+            @Value("${security.otp.digit:6}") int otpDigits,
+            @Value("${security.otp.expiry-minutes:15}") int otpExpiryMinutes) {
         this.customerEntityRepository = customerEntityRepository;
         this.jwtService = jwtService;
         this.verificationTokenRepository = verificationTokenRepository;
@@ -59,7 +60,7 @@ public class DefaultCustomerService implements CustomerService {
         validateCustomerEmailExist(customerRegistrationRequest.getEmail());
         CustomerEntity customerEntity = buildCustomerEntityInstance(customerRegistrationRequest);
         customerEntity.setPassword(passwordEncoder.encode(customerRegistrationRequest.getPassword()));
-        CustomerEntity savedCustomer =  customerEntityRepository.save(customerEntity);
+        CustomerEntity savedCustomer = customerEntityRepository.save(customerEntity);
         String otpDigitsNumbersGenerate = OtpGenerator.generateOtp(otpDigits);
         String hashedOtpDigits = passwordEncoder.encode(otpDigitsNumbersGenerate);
         VerificationToken verificationToken = new VerificationToken();
@@ -68,7 +69,8 @@ public class DefaultCustomerService implements CustomerService {
         verificationToken.setUserEntity(customerEntity);
         verificationToken.setExpiredAt(expiredAt);
         verificationTokenRepository.save(verificationToken);
-        SendVerificationEmailResponse sendVerificationEmailResponse = emailService.sendVerificationEmail(customerEntity.getEmail(), otpDigitsNumbersGenerate);
+        SendVerificationEmailResponse sendVerificationEmailResponse = emailService
+                .sendVerificationEmail(customerEntity.getEmail(), otpDigitsNumbersGenerate);
         sendVerificationEmailResponse.setEmail(customerEntity.getEmail());
         sendVerificationEmailResponse.setExpiresAt(expiredAt.toString());
         sendVerificationEmailResponse.setVerificationMessage(VERIFICATION_TOKEN_SENT_MESSAGE.getMessage());
@@ -80,7 +82,7 @@ public class DefaultCustomerService implements CustomerService {
     @Override
     public CustomerProfileResponse updateCustomerProfile(UpdateCustomerProfileRequest updateCustomerProfileRequest) {
         CustomerEntity customerEntity = customerEntityRepository.findById(updateCustomerProfileRequest.getCustomerId())
-                .orElseThrow(()-> new UserNotFoundException(CUSTOMER_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
+                .orElseThrow(() -> new UserNotFoundException(CUSTOMER_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
         customerEntity.setFirstName(updateCustomerProfileRequest.getFirstName());
         customerEntity.setLastName(updateCustomerProfileRequest.getLastName());
         customerEntity.setDefaultAddress(updateCustomerProfileRequest.getDefaultAddress());
@@ -92,14 +94,14 @@ public class DefaultCustomerService implements CustomerService {
     @Override
     public CustomerProfileResponse getCustomerProfile(Long customerId) {
         CustomerEntity customerEntity = customerEntityRepository.findById(customerId)
-                .orElseThrow(()-> new UserNotFoundException(CUSTOMER_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
+                .orElseThrow(() -> new UserNotFoundException(CUSTOMER_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
         return buildCustomerProfileResponse(customerEntity);
     }
 
     @Override
     public ChangePasswordResponse changePassword(ChangePasswordRequest changePasswordRequest) {
         CustomerEntity customerEntity = customerEntityRepository.findById(changePasswordRequest.getCustomerId())
-                .orElseThrow(()-> new UserNotFoundException(CUSTOMER_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
+                .orElseThrow(() -> new UserNotFoundException(CUSTOMER_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
         validateOldPasswordMatch(changePasswordRequest, customerEntity);
         validatePasswordNotBlank(changePasswordRequest);
         customerEntity.setPassword(passwordEncoder.encode(changePasswordRequest.getNewPassword()));
@@ -110,7 +112,7 @@ public class DefaultCustomerService implements CustomerService {
     }
 
     private static void validatePasswordNotBlank(ChangePasswordRequest changePasswordRequest) {
-        if (changePasswordRequest.getNewPassword() == null || changePasswordRequest.getNewPassword().isBlank()){
+        if (changePasswordRequest.getNewPassword() == null || changePasswordRequest.getNewPassword().isBlank()) {
             throw new EmptyRequiredFieldException("Password can not be empty");
         }
     }
@@ -144,6 +146,7 @@ public class DefaultCustomerService implements CustomerService {
 
     private void validateCustomerEmailExist(String email) {
         Boolean isCustomerEmailExist = customerEntityRepository.existsByEmail(email);
-        if (isCustomerEmailExist)throw new CustomerEmailAlreadyExist("Email Already Exist");
+        if (isCustomerEmailExist)
+            throw new CustomerEmailAlreadyExist("Email Already Exist");
     }
 }
