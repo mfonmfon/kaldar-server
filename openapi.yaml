@@ -1,9 +1,20 @@
 openapi: 3.0.3
 info:
-  title: Kaldar API Documentation
+  title: Kaldar Platform API Documentation
   description: |
-    Production REST API specification for the Kaldar Monorepo — Laundry & Dry Cleaning Platform.
-    Includes modules for **Notification**, **Favourite**, **Wallet**, and **Payment (Paystack Integration)**.
+    Complete Production REST API specification for the Kaldar Monorepo (Laundry & Dry Cleaning Platform).
+    
+    ### Modules Included:
+    1. **Authentication & OTP**: Registration, login, OTP verification, password reset.
+    2. **Customer**: Profile management, update, password change.
+    3. **DryCleaner**: Business registration, CAC document verification, services/inventory, working hours, payout account, analytics, onboarding status.
+    4. **Discovery**: Geospatial search for available dry cleaners nearby.
+    5. **Order & Review**: Order placement, accept/reject, status progression, customer reviews & ratings.
+    6. **Dispatch & Logistics**: Delivery partner webhook callbacks (Chowdeck / Uber Direct).
+    7. **Notification**: User notifications list, read status toggling, bulk operations.
+    8. **Favourite**: Customer saved dry cleaners.
+    9. **Wallet**: Customer wallet balance, summary history, credit & debit.
+    10. **Payment**: Paystack wallet top-up initiation, HMAC-verified webhook processing, history.
   version: 1.0.0
   contact:
     name: Kaldar Engineering Team
@@ -12,264 +23,161 @@ info:
 servers:
   - url: http://localhost:8080
     description: Local Development Server
-  - url: https://api.kaldar.com
-    description: Staging / Production Server
+  - url: https://kaldar-server.onrender.com
+    description: Production / Staging Server (Render)
 
 security:
   - bearerAuth: []
 
+tags:
+  - name: Authentication
+    description: User login, OTP verification, and password reset workflows
+  - name: Customer
+    description: Customer profile management and account settings
+  - name: DryCleaner
+    description: Dry cleaner store setup, verification, working hours, and analytics
+  - name: Discovery
+    description: Geospatial discovery of nearby dry cleaners
+  - name: Order
+    description: Order placement, dispatch lifecycle, and status updates
+  - name: Review
+    description: Order rating and feedback reviews
+  - name: Wallet
+    description: Customer wallet balance and transaction summary
+  - name: Payment
+    description: External wallet funding via Paystack integration
+  - name: Favorites
+    description: Customer saved favorite dry cleaners
+  - name: Notifications
+    description: User notification center and read management
+  - name: Logistics
+    description: Third-party logistics provider callbacks
+
 paths:
 
   # =========================================================================
-  # WALLET MODULE
+  # 1. AUTHENTICATION & OTP
   # =========================================================================
-  /api/v1/wallet/balance:
-    get:
-      tags:
-        - Wallet
-      summary: Get Customer Wallet Balance
-      description: Returns the authenticated customer's current wallet balance in NGN.
-      operationId: getWalletBalance
-      responses:
-        '200':
-          description: Wallet balance retrieved successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiResponseWalletBalanceResponse'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-
-  /api/v1/wallet/{userId}/summary:
-    get:
-      tags:
-        - Wallet
-      summary: Get Wallet Summary (Balance + History)
-      description: Returns the wallet balance and full transaction history for a specific user.
-      operationId: getWalletSummary
-      parameters:
-        - name: userId
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: Wallet summary retrieved successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiResponseWalletSummaryResponse'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-
-  /api/v1/wallet/credit:
+  /api/v1/auth/login:
     post:
-      tags:
-        - Wallet
-      summary: Credit User Wallet
-      description: Internal endpoint to credit a user's wallet.
-      operationId: creditWallet
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/WalletCreditRequest'
-      responses:
-        '200':
-          description: Wallet credited successfully
-        '400':
-          $ref: '#/components/responses/BadRequestError'
-
-  /api/v1/wallet/debit:
-    post:
-      tags:
-        - Wallet
-      summary: Debit User Wallet
-      description: Internal endpoint to debit a user's wallet.
-      operationId: debitWallet
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/WalletDebitRequest'
-      responses:
-        '200':
-          description: Wallet debited successfully
-        '400':
-          $ref: '#/components/responses/BadRequestError'
-
-  # =========================================================================
-  # PAYMENT MODULE
-  # =========================================================================
-  /api/v1/payment/initiate:
-    post:
-      tags:
-        - Payment
-      summary: Initiate Paystack Wallet Top-up
-      description: Returns Paystack authorization URL and reference for customer checkout redirect.
-      operationId: initiatePayment
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/InitiatePaymentRequest'
-      responses:
-        '200':
-          description: Payment initiated successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiResponsePaymentInitResponse'
-        '400':
-          $ref: '#/components/responses/BadRequestError'
-
-  /api/v1/payment/webhook:
-    post:
-      tags:
-        - Payment
-      summary: Paystack Webhook Callback
-      description: Public webhook endpoint. Verified via `x-paystack-signature` HMAC-SHA512 header.
-      operationId: handlePaymentWebhook
+      tags: [Authentication]
+      summary: User Login
+      description: Authenticates user credentials and returns a Bearer JWT token.
       security: []
-      parameters:
-        - name: x-paystack-signature
-          in: header
-          required: true
-          schema:
-            type: string
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
+              required: [email, password]
+              properties:
+                email: { type: string, example: "customer@kaldar.com" }
+                password: { type: string, example: "Password123!" }
       responses:
         '200':
-          description: Webhook received and processed successfully
+          description: Login successful, returns JWT token
 
-  /api/v1/payment/history:
-    get:
-      tags:
-        - Payment
-      summary: Get Customer Payment History
-      description: Returns transaction history of top-up attempts.
-      operationId: getPaymentHistory
-      responses:
-        '200':
-          description: Payment history fetched successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiResponsePaymentHistoryList'
-
-  # =========================================================================
-  # FAVOURITE MODULE
-  # =========================================================================
-  /api/v1/favorites:
-    get:
-      tags:
-        - Favorites
-      summary: Get Saved Favourites
-      description: Returns list of saved dry cleaner IDs for the authenticated customer.
-      operationId: getFavourites
-      responses:
-        '200':
-          description: Favourites retrieved successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiResponseFavouriteList'
-
-  /api/v1/favorites/{dryCleanerId}:
+  /api/v1/auth/verify-otp:
     post:
-      tags:
-        - Favorites
-      summary: Add Dry Cleaner to Favourites
-      description: Adds dry cleaner to customer's saved favourites.
-      operationId: addFavourite
-      parameters:
-        - name: dryCleanerId
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
+      tags: [Authentication]
+      summary: Verify Email OTP
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, otpInput]
+              properties:
+                email: { type: string, example: "customer@kaldar.com" }
+                otpInput: { type: string, example: "123456" }
       responses:
-        '200':
-          description: Dry cleaner added to favourites
-        '409':
-          description: Duplicate favourite entry
+        '200': { description: OTP verified successfully }
 
-    delete:
-      tags:
-        - Favorites
-      summary: Remove Dry Cleaner from Favourites
-      description: Removes dry cleaner from customer's favourites.
-      operationId: removeFavourite
-      parameters:
-        - name: dryCleanerId
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
+  /api/v1/auth/resend-otp:
+    post:
+      tags: [Authentication]
+      summary: Resend Verification OTP
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: { type: string, example: "customer@kaldar.com" }
       responses:
-        '200':
-          description: Dry cleaner removed from favourites
-        '404':
-          description: Favourite entry not found
+        '200': { description: New OTP sent to email }
+
+  /api/v1/auth/forgot_password:
+    post:
+      tags: [Authentication]
+      summary: Request Password Reset Token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: { type: string, example: "user@kaldar.com" }
+      responses:
+        '200': { description: Password reset link/token sent }
+
+  /api/v1/auth/reset_password:
+    post:
+      tags: [Authentication]
+      summary: Reset Password with Token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, resetToken, newPassword]
+              properties:
+                email: { type: string, example: "user@kaldar.com" }
+                resetToken: { type: string, example: "RESET-TOKEN-123" }
+                newPassword: { type: string, example: "NewPassword123!" }
+      responses:
+        '200': { description: Password reset successfully }
 
   # =========================================================================
-  # NOTIFICATION MODULE
+  # 2. CUSTOMER MODULE
   # =========================================================================
-  /api/v1/notifications:
-    get:
-      tags:
-        - Notifications
-      summary: Get User Notifications
-      description: Paginated notifications list with optional type and read status filters.
-      operationId: getNotifications
-      parameters:
-        - name: page
-          in: query
-          schema:
-            type: integer
-            default: 0
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            default: 10
-        - name: type
-          in: query
-          schema:
-            type: string
-        - name: read
-          in: query
-          schema:
-            type: boolean
+  /api/v1/customer/register:
+    post:
+      tags: [Customer]
+      summary: Register New Customer Account
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [firstName, lastName, email, password, phoneNumber]
+              properties:
+                firstName: { type: string, example: "John" }
+                lastName: { type: string, example: "Doe" }
+                email: { type: string, example: "john.doe@example.com" }
+                password: { type: string, example: "Password123!" }
+                phoneNumber: { type: string, example: "+2348012345678" }
+                address: { type: string, example: "15 Victoria Island, Lagos" }
       responses:
-        '200':
-          description: Notifications retrieved successfully
+        '201': { description: Customer registered successfully }
 
-  /api/v1/notifications/{id}/read:
-    patch:
-      tags:
-        - Notifications
-      summary: Toggle Read Status
-      operationId: markNotificationRead
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
+  /api/v1/customer/updated_customer_profile:
+    put:
+      tags: [Customer]
+      summary: Update Customer Profile
       requestBody:
         required: true
         content:
@@ -277,86 +185,612 @@ paths:
             schema:
               type: object
               properties:
-                isRead:
-                  type: boolean
+                firstName: { type: string }
+                lastName: { type: string }
+                phoneNumber: { type: string }
+                address: { type: string }
       responses:
-        '200':
-          description: Read status updated
+        '200': { description: Profile updated }
 
-  /api/v1/notifications/{id}:
+  /api/v1/customer/{customerId}:
+    get:
+      tags: [Customer]
+      summary: Get Customer Profile
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '200': { description: Profile fetched }
+
+  /api/v1/customer/change_password:
+    put:
+      tags: [Customer]
+      summary: Change Customer Password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [oldPassword, newPassword]
+              properties:
+                oldPassword: { type: string }
+                newPassword: { type: string }
+      responses:
+        '200': { description: Password changed }
+
+  # =========================================================================
+  # 3. DRY CLEANER MODULE
+  # =========================================================================
+  /api/v1/drycleaner/drycleaner/register:
+    post:
+      tags: [DryCleaner]
+      summary: Register New Dry Cleaner Store
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [businessName, email, password, phoneNumber, address]
+              properties:
+                businessName: { type: string, example: "Clean & Fresh Laundry" }
+                email: { type: string, example: "store@cleanfresh.com" }
+                password: { type: string, example: "Password123!" }
+                phoneNumber: { type: string, example: "+2348087654321" }
+                address: { type: string, example: "12 Lekki Phase 1, Lagos" }
+      responses:
+        '201': { description: Dry cleaner registered }
+
+  /api/v1/drycleaner/drycleaner/verify-business:
+    post:
+      tags: [DryCleaner]
+      summary: Submit CAC Business Verification Documents
+      description: Multipart form submission containing JSON data and CAC Certificate file.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    dryCleanerId: { type: integer }
+                    businessName: { type: string }
+                    registrationNumber: { type: string }
+                    taxIdentificationNumber: { type: string }
+                cacDocument:
+                  type: string
+                  format: binary
+      responses:
+        '201': { description: Verification submitted }
+
+  /api/v1/drycleaner/drycleaner/{dryCleanerId}/verification-status:
+    get:
+      tags: [DryCleaner]
+      summary: Check CAC Verification Status
+      parameters:
+        - name: dryCleanerId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '200': { description: Verification status retrieved }
+
+  /api/v1/drycleaner/drycleaner/{dryCleanerId}/services:
+    get:
+      tags: [DryCleaner]
+      summary: List Dry Cleaner Services / Offerings
+      parameters:
+        - name: dryCleanerId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '200': { description: Services list fetched }
+
+    post:
+      tags: [DryCleaner]
+      summary: Add or Update Service Offering
+      parameters:
+        - name: dryCleanerId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [serviceName, price]
+              properties:
+                serviceName: { type: string, example: "Dry Cleaning - Suit (2 piece)" }
+                description: { type: string, example: "Professional suit cleaning" }
+                price: { type: number, example: 3500.00 }
+      responses:
+        '201': { description: Service offering added/updated }
+
+  /api/v1/drycleaner/drycleaner/payout-account:
+    post:
+      tags: [DryCleaner]
+      summary: Update Payout Bank Account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [dryCleanerId, accountName, accountNumber, bankCode, bankName]
+              properties:
+                dryCleanerId: { type: integer }
+                accountName: { type: string, example: "Clean & Fresh Ltd" }
+                accountNumber: { type: string, example: "0123456789" }
+                bankCode: { type: string, example: "058" }
+                bankName: { type: string, example: "GTBank" }
+      responses:
+        '200': { description: Payout account updated }
+
+  /api/v1/drycleaner/drycleaner/working-hours:
+    post:
+      tags: [DryCleaner]
+      summary: Update Working Hours Schedule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [dryCleanerId, workingHoursJson]
+              properties:
+                dryCleanerId: { type: integer }
+                workingHoursJson: { type: string, example: "{\"mon\": \"08:00-18:00\"}" }
+      responses:
+        '200': { description: Working hours updated }
+
+  /api/v1/drycleaner/drycleaner/{dryCleanerId}/onboarding-status:
+    get:
+      tags: [DryCleaner]
+      summary: Get Onboarding Checklist Progress
+      parameters:
+        - name: dryCleanerId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '200': { description: Onboarding status retrieved }
+
+  /api/v1/drycleaner/drycleaner/{dryCleanerId}/analytics:
+    get:
+      tags: [DryCleaner]
+      summary: Get Store Performance Analytics
+      parameters:
+        - name: dryCleanerId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+        - name: period
+          in: query
+          schema: { type: string, default: "today" }
+      responses:
+        '200': { description: Analytics retrieved }
+
+  # =========================================================================
+  # 4. DISCOVERY MODULE
+  # =========================================================================
+  /api/v1/drycleaners/available:
+    post:
+      tags: [Discovery]
+      summary: Search Available Dry Cleaners Nearby
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [lat, lng, radiusKm]
+              properties:
+                lat: { type: number, format: double, example: 6.4531 }
+                lng: { type: number, format: double, example: 3.3958 }
+                radiusKm: { type: number, format: double, example: 10.0 }
+                services: { type: array, items: { type: string } }
+                openNow: { type: boolean, example: true }
+      responses:
+        '200': { description: Nearby dry cleaners list }
+
+  # =========================================================================
+  # 5. ORDER & REVIEW MODULE
+  # =========================================================================
+  /api/v1/order:
+    post:
+      tags: [Order]
+      summary: Place New Order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [customerId, dryCleanerId, serviceItems]
+              properties:
+                customerId: { type: integer }
+                dryCleanerId: { type: integer }
+                pickupAddress: { type: string }
+                deliveryAddress: { type: string }
+                serviceItems:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      serviceOfferingId: { type: integer }
+                      quantity: { type: integer }
+      responses:
+        '200': { description: Order placed }
+
+  /api/v1/order/accept:
+    post:
+      tags: [Order]
+      summary: Accept Order (Dry Cleaner)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [orderId, dryCleanerId]
+              properties:
+                orderId: { type: integer }
+                dryCleanerId: { type: integer }
+      responses:
+        '200': { description: Order accepted }
+
+  /api/v1/order/reject:
+    post:
+      tags: [Order]
+      summary: Reject Order (Dry Cleaner)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [orderId, dryCleanerId, reason]
+              properties:
+                orderId: { type: integer }
+                dryCleanerId: { type: integer }
+                reason: { type: string }
+      responses:
+        '200': { description: Order rejected }
+
+  /api/v1/order/status:
+    patch:
+      tags: [Order]
+      summary: Update Order Status Progression
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [orderId, status]
+              properties:
+                orderId: { type: integer }
+                status: { type: string, example: "IN_PROGRESS" }
+      responses:
+        '200': { description: Order status updated }
+
+  /api/v1/order/review:
+    post:
+      tags: [Review]
+      summary: Submit Order Review & Rating
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [orderId, customerId, dryCleanerId, rating]
+              properties:
+                orderId: { type: integer }
+                customerId: { type: integer }
+                dryCleanerId: { type: integer }
+                rating: { type: integer, example: 5 }
+                comment: { type: string, example: "Excellent cleaning!" }
+      responses:
+        '200': { description: Review submitted }
+
+  /api/v1/order/review/drycleaner/{dryCleanerId}:
+    get:
+      tags: [Review]
+      summary: Get Reviews for Dry Cleaner Store
+      parameters:
+        - name: dryCleanerId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '200': { description: Store reviews fetched }
+
+  /api/v1/order/review/{orderId}:
+    get:
+      tags: [Review]
+      summary: Get Review for Specific Order
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '200': { description: Order review fetched }
+
+  # =========================================================================
+  # 6. WALLET MODULE
+  # =========================================================================
+  /api/v1/wallet/balance:
+    get:
+      tags: [Wallet]
+      summary: Get Customer Wallet Balance
+      responses:
+        '200': { description: Balance fetched }
+
+  /api/v1/wallet/{userId}/summary:
+    get:
+      tags: [Wallet]
+      summary: Get Wallet Summary & History
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '200': { description: Summary fetched }
+
+  /api/v1/wallet/credit:
+    post:
+      tags: [Wallet]
+      summary: Credit User Wallet (Internal)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId, amount]
+              properties:
+                userId: { type: integer }
+                amount: { type: number }
+                description: { type: string }
+                reference: { type: string }
+      responses:
+        '200': { description: Wallet credited }
+
+  /api/v1/wallet/debit:
+    post:
+      tags: [Wallet]
+      summary: Debit User Wallet (Internal)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId, amount]
+              properties:
+                userId: { type: integer }
+                amount: { type: number }
+                description: { type: string }
+                reference: { type: string }
+      responses:
+        '200': { description: Wallet debited }
+
+  # =========================================================================
+  # 7. PAYMENT MODULE (PAYSTACK)
+  # =========================================================================
+  /api/v1/payment/initiate:
+    post:
+      tags: [Payment]
+      summary: Initiate Paystack Wallet Top-up
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [amount]
+              properties:
+                amount: { type: number, example: 5000.00 }
+      responses:
+        '200': { description: Payment authorization URL returned }
+
+  /api/v1/payment/webhook:
+    post:
+      tags: [Payment]
+      summary: Paystack Webhook Callback
+      security: []
+      parameters:
+        - name: x-paystack-signature
+          in: header
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object }
+      responses:
+        '200': { description: Webhook processed }
+
+  /api/v1/payment/history:
+    get:
+      tags: [Payment]
+      summary: Get Payment Top-up History
+      responses:
+        '200': { description: Payment transactions list }
+
+  # =========================================================================
+  # 8. FAVOURITES MODULE
+  # =========================================================================
+  /api/v1/favorites:
+    get:
+      tags: [Favorites]
+      summary: Get Saved Favorite Dry Cleaners
+      responses:
+        '200': { description: Saved dry cleaner IDs }
+
+  /api/v1/favorites/{dryCleanerId}:
+    post:
+      tags: [Favorites]
+      summary: Save Dry Cleaner to Favorites
+      parameters:
+        - name: dryCleanerId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '200': { description: Added to favorites }
+
     delete:
-      tags:
-        - Notifications
-      summary: Delete Notification
-      operationId: deleteNotification
+      tags: [Favorites]
+      summary: Remove Dry Cleaner from Favorites
+      parameters:
+        - name: dryCleanerId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '200': { description: Removed from favorites }
+
+  # =========================================================================
+  # 9. NOTIFICATION MODULE
+  # =========================================================================
+  /api/v1/notifications:
+    get:
+      tags: [Notifications]
+      summary: Get User Notifications (Paginated)
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer, default: 0 }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 10 }
+        - name: type
+          in: query
+          schema: { type: string }
+        - name: read
+          in: query
+          schema: { type: boolean }
+      responses:
+        '200': { description: Notifications list }
+
+  /api/v1/notifications/{id}/read:
+    patch:
+      tags: [Notifications]
+      summary: Toggle Notification Read Status
       parameters:
         - name: id
           in: path
           required: true
-          schema:
-            type: integer
-            format: int64
+          schema: { type: integer, format: int64 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                isRead: { type: boolean }
       responses:
-        '200':
-          description: Notification deleted
+        '200': { description: Read status updated }
+
+  /api/v1/notifications/{id}:
+    delete:
+      tags: [Notifications]
+      summary: Delete Notification
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '200': { description: Notification deleted }
 
   /api/v1/notifications/bulk/read:
     post:
-      tags:
-        - Notifications
+      tags: [Notifications]
       summary: Bulk Mark Read
-      operationId: bulkMarkRead
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BulkNotificationRequest'
+              type: object
+              required: [ids]
+              properties:
+                ids: { type: array, items: { type: integer } }
       responses:
-        '200':
-          description: Notifications marked read
+        '200': { description: Bulk read complete }
 
   /api/v1/notifications/bulk/unread:
     post:
-      tags:
-        - Notifications
+      tags: [Notifications]
       summary: Bulk Mark Unread
-      operationId: bulkMarkUnread
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BulkNotificationRequest'
+              type: object
+              required: [ids]
+              properties:
+                ids: { type: array, items: { type: integer } }
       responses:
-        '200':
-          description: Notifications marked unread
+        '200': { description: Bulk unread complete }
 
   /api/v1/notifications/bulk/delete:
     post:
-      tags:
-        - Notifications
+      tags: [Notifications]
       summary: Bulk Delete Notifications
-      operationId: bulkDeleteNotifications
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BulkNotificationRequest'
+              type: object
+              required: [ids]
+              properties:
+                ids: { type: array, items: { type: integer } }
       responses:
-        '200':
-          description: Notifications deleted
+        '200': { description: Bulk delete complete }
 
   /api/v1/notifications/read-all:
     post:
-      tags:
-        - Notifications
+      tags: [Notifications]
       summary: Mark All Notifications Read
-      operationId: markAllNotificationsRead
       responses:
-        '200':
-          description: All notifications marked read
+        '200': { description: All marked read }
+
+  # =========================================================================
+  # 10. DISPATCH LOGISTICS MODULE
+  # =========================================================================
+  /api/v1/logistics/webhook:
+    post:
+      tags: [Logistics]
+      summary: Delivery Partner Webhook Callback
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object }
+      responses:
+        '200': { description: Logistics event processed }
 
 components:
   securitySchemes:
@@ -364,157 +798,3 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-
-  schemas:
-    WalletBalanceResponse:
-      type: object
-      properties:
-        balance:
-          type: number
-          example: 15500.00
-        currency:
-          type: string
-          example: "NGN"
-
-    ApiResponseWalletBalanceResponse:
-      type: object
-      properties:
-        isSuccess:
-          type: boolean
-          example: true
-        status:
-          type: integer
-          example: 200
-        message:
-          type: string
-          example: "Wallet balance fetched successfully"
-        data:
-          $ref: '#/components/schemas/WalletBalanceResponse'
-
-    ApiResponseWalletSummaryResponse:
-      type: object
-      properties:
-        isSuccess:
-          type: boolean
-          example: true
-        status:
-          type: integer
-          example: 200
-        message:
-          type: string
-          example: "Wallet summary fetched successfully"
-
-    WalletCreditRequest:
-      type: object
-      required:
-        - userId
-        - amount
-      properties:
-        userId:
-          type: integer
-          format: int64
-          example: 1
-        amount:
-          type: number
-          example: 5000.00
-        description:
-          type: string
-          example: "Paystack wallet top-up"
-        reference:
-          type: string
-          example: "KLD-ABC123XYZ"
-
-    WalletDebitRequest:
-      type: object
-      required:
-        - userId
-        - amount
-      properties:
-        userId:
-          type: integer
-          format: int64
-          example: 1
-        amount:
-          type: number
-          example: 2500.00
-        description:
-          type: string
-          example: "Payment for order #104"
-        reference:
-          type: string
-          example: "ORD-104-DEBIT"
-
-    InitiatePaymentRequest:
-      type: object
-      required:
-        - amount
-      properties:
-        amount:
-          type: number
-          example: 5000.00
-
-    PaymentInitResponse:
-      type: object
-      properties:
-        authorizationUrl:
-          type: string
-          example: "https://checkout.paystack.com/3849x8z"
-        reference:
-          type: string
-          example: "KLD-89AF12BC"
-        accessCode:
-          type: string
-          example: "3849x8z"
-
-    ApiResponsePaymentInitResponse:
-      type: object
-      properties:
-        isSuccess:
-          type: boolean
-          example: true
-        status:
-          type: integer
-          example: 200
-        message:
-          type: string
-          example: "Payment transaction initiated successfully"
-        data:
-          $ref: '#/components/schemas/PaymentInitResponse'
-
-    ApiResponsePaymentHistoryList:
-      type: object
-      properties:
-        isSuccess:
-          type: boolean
-          example: true
-        status:
-          type: integer
-          example: 200
-
-    ApiResponseFavouriteList:
-      type: object
-      properties:
-        isSuccess:
-          type: boolean
-          example: true
-        status:
-          type: integer
-          example: 200
-
-    BulkNotificationRequest:
-      type: object
-      required:
-        - ids
-      properties:
-        ids:
-          type: array
-          items:
-            type: integer
-            format: int64
-          example: [1, 2, 3]
-
-  responses:
-    UnauthorizedError:
-      description: JWT authentication token missing or expired
-    BadRequestError:
-      description: Validation error or invalid request payload
