@@ -52,4 +52,9 @@ logistics:
 paystack:
   secret-key: ${PAYSTACK_SECRET_KEY:}
   base-url: https://api.paystack.co
-
+
+anchor:
+  secret-key: ${ANCHOR_SECRET_KEY:}
+  webhook-secret: ${ANCHOR_WEBHOOK_SECRET:}
+  base-url: ${ANCHOR_BASE_URL:https://api.getanchor.co}
+
