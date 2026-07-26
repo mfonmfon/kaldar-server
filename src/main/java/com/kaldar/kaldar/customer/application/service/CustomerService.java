@@ -16,4 +16,5 @@ public interface CustomerService {
 
     ChangePasswordResponse changePassword(ChangePasswordRequest changePasswordRequest);
 
+    void deleteCustomer(Long customerId);
 }

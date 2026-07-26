@@ -1,30 +1,31 @@
 package com.kaldar.kaldar.customer.application.service.impl;
 
-import com.kaldar.kaldar.shared.domain.constants.Role;
-import com.kaldar.kaldar.customer.domain.model.CustomerEntity;
-import com.kaldar.kaldar.shared.infrastructure.auth.domain.model.VerificationToken;
-import com.kaldar.kaldar.customer.domain.repository.CustomerEntityRepository;
-import com.kaldar.kaldar.shared.infrastructure.auth.domain.repository.VerificationTokenRepository;
 import com.kaldar.kaldar.customer.application.dto.request.ChangePasswordRequest;
 import com.kaldar.kaldar.customer.application.dto.request.CustomerRegistrationRequest;
-import com.kaldar.kaldar.shared.infrastructure.auth.dto.request.SendVerificationEmailRequest;
 import com.kaldar.kaldar.customer.application.dto.request.UpdateCustomerProfileRequest;
 import com.kaldar.kaldar.customer.application.dto.response.ChangePasswordResponse;
 import com.kaldar.kaldar.customer.application.dto.response.CustomerProfileResponse;
 import com.kaldar.kaldar.customer.application.dto.response.CustomerRegistrationResponse;
-import com.kaldar.kaldar.shared.infrastructure.auth.dto.response.SendVerificationEmailResponse;
+import com.kaldar.kaldar.customer.application.service.CustomerService;
+import com.kaldar.kaldar.customer.domain.model.CustomerEntity;
+import com.kaldar.kaldar.customer.domain.repository.CustomerEntityRepository;
+import com.kaldar.kaldar.shared.domain.constants.Role;
 import com.kaldar.kaldar.shared.domain.exceptions.CustomerEmailAlreadyExist;
 import com.kaldar.kaldar.shared.domain.exceptions.EmptyRequiredFieldException;
 import com.kaldar.kaldar.shared.domain.exceptions.PasswordMismatchException;
 import com.kaldar.kaldar.shared.domain.exceptions.UserNotFoundException;
-import com.kaldar.kaldar.customer.application.service.CustomerService;
-import com.kaldar.kaldar.shared.infrastructure.email.service.EmailService;
+import com.kaldar.kaldar.shared.infrastructure.auth.domain.model.VerificationToken;
+import com.kaldar.kaldar.shared.infrastructure.auth.domain.repository.VerificationTokenRepository;
+import com.kaldar.kaldar.shared.infrastructure.auth.dto.response.SendVerificationEmailResponse;
 import com.kaldar.kaldar.shared.infrastructure.auth.service.impl.JwtService;
+import com.kaldar.kaldar.shared.infrastructure.email.service.EmailService;
 import com.kaldar.kaldar.shared.infrastructure.utility.OtpGenerator;
+import com.kaldar.kaldar.wallet.domain.repository.WalletRepository;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -37,13 +38,13 @@ public class DefaultCustomerService implements CustomerService {
     private final VerificationTokenRepository verificationTokenRepository;
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
-    // Otp Configuration
+    private final WalletRepository walletRepository;
     private final int otpDigits;
     private final int otpExpiryMinutes;
 
     public DefaultCustomerService(CustomerEntityRepository customerEntityRepository, JwtService jwtService,
             VerificationTokenRepository verificationTokenRepository, EmailService emailService,
-            PasswordEncoder passwordEncoder,
+            PasswordEncoder passwordEncoder, WalletRepository walletRepository,
             @Value("${security.otp.digit:6}") int otpDigits,
             @Value("${security.otp.expiry-minutes:15}") int otpExpiryMinutes) {
         this.customerEntityRepository = customerEntityRepository;
@@ -51,6 +52,7 @@ public class DefaultCustomerService implements CustomerService {
         this.verificationTokenRepository = verificationTokenRepository;
         this.emailService = emailService;
         this.passwordEncoder = passwordEncoder;
+        this.walletRepository = walletRepository;
         this.otpDigits = otpDigits;
         this.otpExpiryMinutes = otpExpiryMinutes;
     }
@@ -109,6 +111,16 @@ public class DefaultCustomerService implements CustomerService {
         ChangePasswordResponse changePasswordResponse = new ChangePasswordResponse();
         changePasswordResponse.setStatusCode("SUCCESS");
         return changePasswordResponse;
+    }
+
+    @Override
+    @Transactional
+    public void deleteCustomer(Long customerId) {
+        CustomerEntity customerEntity = customerEntityRepository.findById(customerId)
+                .orElseThrow(() -> new UserNotFoundException(CUSTOMER_NOT_FOUND_EXCEPTION_MESSAGE.getMessage()));
+        walletRepository.findByUserId(customerId).ifPresent(walletRepository::delete);
+        verificationTokenRepository.findByUserEntityAndUsedAtIsNull(customerEntity).ifPresent(verificationTokenRepository::delete);
+        customerEntityRepository.delete(customerEntity);
     }
 
     private static void validatePasswordNotBlank(ChangePasswordRequest changePasswordRequest) {

@@ -53,6 +53,7 @@ class DefaultDryCleanerServiceTest {
     @Mock private ServiceOfferingRepository serviceOfferingRepository;
     @Mock private BusinessVerificationRepository businessVerificationRepository;
     @Mock private ReviewRepository reviewRepository;
+    @Mock private com.kaldar.kaldar.wallet.domain.repository.WalletRepository walletRepository;
 
     private DefaultDryCleanerService dryCleanerService;
 
@@ -61,7 +62,8 @@ class DefaultDryCleanerServiceTest {
         dryCleanerService = new DefaultDryCleanerService(
                 dryCleanerEntityRepository, passwordEncoder, verificationTokenRepository,
                 emailService, 6, 15, customerEntityRepository, orderEntityRepository,
-                serviceOfferingRepository, businessVerificationRepository, reviewRepository
+                serviceOfferingRepository, businessVerificationRepository, reviewRepository,
+                walletRepository
         );
     }
 

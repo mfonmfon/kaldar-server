@@ -1,11 +1,24 @@
 package com.kaldar.kaldar.wallet.domain.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "wallet_transactions")
+@Table(name = "wallet_transactions", indexes = {
+    @Index(name = "idx_wallet_tx_reference", columnList = "reference")
+})
 public class WalletTransaction {
 
     @Id
@@ -19,12 +32,14 @@ public class WalletTransaction {
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal amount;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String type; // CREDIT or DEBIT
+    private WalletTransactionType type;
 
     @Column(nullable = false)
     private String description;
 
+    @Column(unique = true)
     private String reference;
 
     @Column(nullable = false)
@@ -32,7 +47,7 @@ public class WalletTransaction {
 
     public WalletTransaction() {}
 
-    public WalletTransaction(Wallet wallet, BigDecimal amount, String type, String description, String reference) {
+    public WalletTransaction(Wallet wallet, BigDecimal amount, WalletTransactionType type, String description, String reference) {
         this.wallet = wallet;
         this.amount = amount;
         this.type = type;
@@ -50,8 +65,8 @@ public class WalletTransaction {
     public BigDecimal getAmount() { return amount; }
     public void setAmount(BigDecimal amount) { this.amount = amount; }
 
-    public String getType() { return type; }
-    public void setType(String type) { this.type = type; }
+    public WalletTransactionType getType() { return type; }
+    public void setType(WalletTransactionType type) { this.type = type; }
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }

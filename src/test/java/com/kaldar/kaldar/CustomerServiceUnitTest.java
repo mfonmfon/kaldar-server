@@ -34,12 +34,13 @@ public class CustomerServiceUnitTest {
     @Mock private VerificationTokenRepository verificationTokenRepository;
     @Mock private EmailService emailService;
     @Mock private PasswordEncoder passwordEncoder;
+    @Mock private com.kaldar.kaldar.wallet.domain.repository.WalletRepository walletRepository;
 
     @BeforeEach
     void setUp() {
         customerService = new DefaultCustomerService(
                 customerEntityRepository, jwtService, verificationTokenRepository,
-                emailService, passwordEncoder, 6, 15
+                emailService, passwordEncoder, walletRepository, 6, 15
         );
     }
 
