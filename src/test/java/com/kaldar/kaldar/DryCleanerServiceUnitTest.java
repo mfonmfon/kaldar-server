@@ -42,6 +42,7 @@ public class DryCleanerServiceUnitTest {
     @Mock private ServiceOfferingRepository serviceOfferingRepository;
     @Mock private BusinessVerificationRepository businessVerificationRepository;
     @Mock private ReviewRepository reviewRepository;
+    @Mock private com.kaldar.kaldar.wallet.domain.repository.WalletRepository walletRepository;
 
     @BeforeEach
     void setUp() {
@@ -49,7 +50,8 @@ public class DryCleanerServiceUnitTest {
                 dryCleanerEntityRepository, passwordEncoder, verificationTokenRepository,
                 emailService, 6, 10, customerEntityRepository,
                 orderEntityRepository,
-                serviceOfferingRepository, businessVerificationRepository, reviewRepository
+                serviceOfferingRepository, businessVerificationRepository, reviewRepository,
+                walletRepository
         );
     }
 

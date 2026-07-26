@@ -37,6 +37,7 @@ public class DefaultDryCleanerService implements DryCleanerService {
     private final com.kaldar.kaldar.drycleaner.domain.repository.ServiceOfferingRepository serviceOfferingRepository;
     private final com.kaldar.kaldar.drycleaner.domain.repository.BusinessVerificationRepository businessVerificationRepository;
     private final com.kaldar.kaldar.order.domain.repository.ReviewRepository reviewRepository;
+    private final com.kaldar.kaldar.wallet.domain.repository.WalletRepository walletRepository;
 
     public DefaultDryCleanerService(DryCleanerEntityRepository dryCleanerEntityRepository,
             PasswordEncoder passwordEncoder,
@@ -47,7 +48,8 @@ public class DefaultDryCleanerService implements DryCleanerService {
             com.kaldar.kaldar.order.domain.repository.OrderEntityRepository orderEntityRepository,
             com.kaldar.kaldar.drycleaner.domain.repository.ServiceOfferingRepository serviceOfferingRepository,
             com.kaldar.kaldar.drycleaner.domain.repository.BusinessVerificationRepository businessVerificationRepository,
-            com.kaldar.kaldar.order.domain.repository.ReviewRepository reviewRepository) {
+            com.kaldar.kaldar.order.domain.repository.ReviewRepository reviewRepository,
+            com.kaldar.kaldar.wallet.domain.repository.WalletRepository walletRepository) {
         this.dryCleanerEntityRepository = dryCleanerEntityRepository;
         this.passwordEncoder = passwordEncoder;
         this.verificationTokenRepository = verificationTokenRepository;
@@ -59,6 +61,7 @@ public class DefaultDryCleanerService implements DryCleanerService {
         this.serviceOfferingRepository = serviceOfferingRepository;
         this.businessVerificationRepository = businessVerificationRepository;
         this.reviewRepository = reviewRepository;
+        this.walletRepository = walletRepository;
     }
 
     @Override
@@ -289,5 +292,14 @@ public class DefaultDryCleanerService implements DryCleanerService {
         com.kaldar.kaldar.drycleaner.application.dto.response.DryCleanerProfileResponse resp = new com.kaldar.kaldar.drycleaner.application.dto.response.DryCleanerProfileResponse();
         resp.setMessage("Profile fetched successfully");
         return resp;
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public void deleteDryCleaner(Long dryCleanerId) {
+        DryCleanerEntity dryCleaner = dryCleanerEntityRepository.findById(dryCleanerId)
+                .orElseThrow(() -> new UserNotFoundException("Dry cleaner not found with ID: " + dryCleanerId));
+        walletRepository.findByUserId(dryCleanerId).ifPresent(walletRepository::delete);
+        dryCleanerEntityRepository.delete(dryCleaner);
     }
 }

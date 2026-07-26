@@ -4,18 +4,18 @@ info:
   description: |
     Complete Production REST API specification for the Kaldar Monorepo (Laundry & Dry Cleaning Platform).
     
-    ### Full API Inventory (49 Endpoints across 13 Controllers):
+    ### Full API Inventory (55 Endpoints across 14 Controllers):
     1. **Authentication & Verification**: Login, OTP verification & resending, Forgot Password, Reset Password.
-    2. **Customer**: Registration, profile fetch, update profile, change password.
-    3. **Dry Cleaner Store & Ops**: Registration, profile edit, CAC business verification & status check, service inventory management, payout bank account setup, working hours schedule, onboarding checklist status, analytics metrics.
-    4. **Payout**: Bank account verification.
+    2. **Customer**: Registration, profile fetch, update profile, change password, delete customer account.
+    3. **Dry Cleaner Store & Ops**: Registration, profile edit, CAC business verification & status check, service inventory management, payout bank account setup, working hours schedule, onboarding checklist status, analytics metrics, delete dry cleaner account.
+    4. **Payout**: Bank account verification, earnings withdrawal to registered bank (Anchor Banking).
     5. **Discovery**: Geospatial discovery of nearby available dry cleaners.
     6. **Order Management**: Create order, accept order, reject order, order status progression, fetch order details, customer order history, dry cleaner order queue.
     7. **Review & Ratings**: Submit review, dry cleaner store reviews list, single order review fetch.
     8. **Logistics & Dispatch**: Delivery partner webhook callbacks (Chowdeck, Uber Direct, etc.).
     9. **Notification Center**: Paginated notifications list, toggle read status, delete single, bulk mark read/unread/delete, mark all read.
     10. **Favourites**: Customer saved dry cleaners list, add to favourites, remove from favourites.
-    11. **Wallet**: Customer wallet balance, user wallet summary & transaction history, internal credit & debit.
+    11. **Wallet & Anchor Banking**: Customer wallet balance, virtual bank account details, user wallet summary & transaction history, internal credit & debit, Anchor deposit webhook callback.
     12. **Payment (Paystack)**: Wallet top-up initiation, HMAC-SHA512 webhook callback, transaction history.
   version: 1.0.0
   contact:
@@ -140,7 +140,7 @@ paths:
         '200': { description: Password reset successfully }
 
   # =========================================================================
-  # 2. CUSTOMER MODULE (4 Endpoints)
+  # 2. CUSTOMER MODULE (5 Endpoints)
   # =========================================================================
   /api/v1/customer/register:
     post:
@@ -193,6 +193,17 @@ paths:
           schema: { type: integer, format: int64 }
       responses:
         '200': { description: Profile retrieved }
+    delete:
+      tags: [Customer]
+      summary: Delete Customer Account
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '200': { description: Customer account deleted successfully }
+        '404': { description: Customer not found }
 
   /api/v1/customer/change_password:
     put:
@@ -212,7 +223,7 @@ paths:
         '200': { description: Password updated }
 
   # =========================================================================
-  # 3. DRY CLEANER & PAYOUT MODULE (11 Endpoints)
+  # 3. DRY CLEANER & PAYOUT MODULE (12 Endpoints)
   # =========================================================================
   /api/v1/drycleaner/drycleaner/register:
     post:
@@ -371,6 +382,19 @@ paths:
       responses:
         '200': { description: Analytics metrics fetched }
 
+  /api/v1/drycleaner/drycleaner/{dryCleanerId}:
+    delete:
+      tags: [DryCleaner]
+      summary: Delete Dry Cleaner Account
+      parameters:
+        - name: dryCleanerId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '200': { description: Dry cleaner account deleted successfully }
+        '404': { description: Dry cleaner not found }
+
   /api/v1/drycleaner/payout/verify-account:
     get:
       tags: [Payout]
@@ -386,6 +410,25 @@ paths:
           schema: { type: string }
       responses:
         '200': { description: Bank account name verified }
+
+  /api/v1/drycleaner/payout/withdraw:
+    post:
+      tags: [Payout]
+      summary: Withdraw Store Earnings to Registered Bank Account (Anchor Banking)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [dryCleanerId, amount]
+              properties:
+                dryCleanerId: { type: integer, format: int64, example: 1 }
+                amount: { type: number, format: double, example: 15000.00 }
+      responses:
+        '200': { description: Withdrawal initiated }
+        '422': { description: Payout bank account not configured }
+        '400': { description: Insufficient wallet balance }
 
   # =========================================================================
   # 4. DISCOVERY MODULE (1 Endpoint)
@@ -465,15 +508,10 @@ paths:
       responses:
         '200': { description: Order rejected }
 
-  /api/v1/order/{orderId}/status:
-    patch:
+  /api/v1/order/status:
+    put:
       tags: [Order]
       summary: Update Order Status Progression
-      parameters:
-        - name: orderId
-          in: path
-          required: true
-          schema: { type: integer, format: int64 }
       requestBody:
         required: true
         content:
@@ -492,33 +530,33 @@ paths:
           required: true
           schema: { type: integer, format: int64 }
       responses:
-        '200': { description: Order details retrieved }
+        '200': { description: Order details }
 
   /api/v1/order/customer/{customerId}:
     get:
       tags: [Order]
-      summary: Get Orders for Customer
+      summary: Get Customer Order History
       parameters:
         - name: customerId
           in: path
           required: true
           schema: { type: integer, format: int64 }
       responses:
-        '200': { description: Customer orders list }
+        '200': { description: Customer order list }
 
   /api/v1/order/drycleaner/{dryCleanerId}:
     get:
       tags: [Order]
-      summary: Get Orders for Dry Cleaner Store
+      summary: Get Dry Cleaner Order Queue
       parameters:
         - name: dryCleanerId
           in: path
           required: true
           schema: { type: integer, format: int64 }
       responses:
-        '200': { description: Store orders list }
+        '200': { description: Dry cleaner order queue }
 
-  /api/v1/order/review/submit:
+  /api/v1/order/review:
     post:
       tags: [Review]
       summary: Submit Order Review & Rating
@@ -528,7 +566,7 @@ paths:
           application/json:
             schema: { type: object }
       responses:
-        '200': { description: Review submitted }
+        '201': { description: Review submitted }
 
   /api/v1/order/review/drycleaner/{dryCleanerId}:
     get:
@@ -542,143 +580,41 @@ paths:
       responses:
         '200': { description: Store reviews list }
 
-  /api/v1/order/review/order/{orderId}:
+  /api/v1/order/review/{orderId}:
     get:
       tags: [Review]
-      summary: Get Review for Order
+      summary: Get Single Order Review
       parameters:
         - name: orderId
           in: path
           required: true
           schema: { type: integer, format: int64 }
       responses:
-        '200': { description: Order review retrieved }
+        '200': { description: Review details }
 
   # =========================================================================
-  # 6. WALLET MODULE (4 Endpoints)
+  # 6. LOGISTICS DISPATCH MODULE (1 Endpoint)
   # =========================================================================
-  /api/v1/wallet/balance:
-    get:
-      tags: [Wallet]
-      summary: Get Customer Wallet Balance
-      responses:
-        '200': { description: Wallet balance retrieved }
-
-  /api/v1/wallet/{userId}/summary:
-    get:
-      tags: [Wallet]
-      summary: Get Wallet Summary & Transaction History
-      parameters:
-        - name: userId
-          in: path
-          required: true
-          schema: { type: integer, format: int64 }
-      responses:
-        '200': { description: Summary retrieved }
-
-  /api/v1/wallet/credit:
+  /api/v1/logistics/webhook/{provider}:
     post:
-      tags: [Wallet]
-      summary: Credit User Wallet (Internal)
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { type: object }
-      responses:
-        '200': { description: Wallet credited }
-
-  /api/v1/wallet/debit:
-    post:
-      tags: [Wallet]
-      summary: Debit User Wallet (Internal)
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { type: object }
-      responses:
-        '200': { description: Wallet debited }
-
-  # =========================================================================
-  # 7. PAYMENT MODULE - PAYSTACK (3 Endpoints)
-  # =========================================================================
-  /api/v1/payment/initiate:
-    post:
-      tags: [Payment]
-      summary: Initiate Paystack Wallet Top-up
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [amount]
-              properties:
-                amount: { type: number, example: 5000.00 }
-      responses:
-        '200': { description: Paystack authorization URL returned }
-
-  /api/v1/payment/webhook:
-    post:
-      tags: [Payment]
-      summary: Paystack Webhook Callback
+      tags: [Logistics]
+      summary: Delivery Provider Webhook Callback (Chowdeck / Uber Direct)
       security: []
       parameters:
-        - name: x-paystack-signature
-          in: header
+        - name: provider
+          in: path
           required: true
-          schema: { type: string }
+          schema: { type: string, example: "chowdeck" }
       requestBody:
         required: true
         content:
           application/json:
             schema: { type: object }
       responses:
-        '200': { description: Webhook processed }
-
-  /api/v1/payment/history:
-    get:
-      tags: [Payment]
-      summary: Get Payment Transaction History
-      responses:
-        '200': { description: Payment transactions list }
+        '200': { description: Logistics webhook processed }
 
   # =========================================================================
-  # 8. FAVOURITES MODULE (3 Endpoints)
-  # =========================================================================
-  /api/v1/favorites:
-    get:
-      tags: [Favorites]
-      summary: Get Saved Favorite Dry Cleaners
-      responses:
-        '200': { description: Saved dry cleaner IDs list }
-
-  /api/v1/favorites/{dryCleanerId}:
-    post:
-      tags: [Favorites]
-      summary: Add Dry Cleaner to Favorites
-      parameters:
-        - name: dryCleanerId
-          in: path
-          required: true
-          schema: { type: integer, format: int64 }
-      responses:
-        '200': { description: Added to favorites }
-
-    delete:
-      tags: [Favorites]
-      summary: Remove Dry Cleaner from Favorites
-      parameters:
-        - name: dryCleanerId
-          in: path
-          required: true
-          schema: { type: integer, format: int64 }
-      responses:
-        '200': { description: Removed from favorites }
-
-  # =========================================================================
-  # 9. NOTIFICATION MODULE (7 Endpoints)
+  # 7. NOTIFICATION MODULE (7 Endpoints)
   # =========================================================================
   /api/v1/notifications:
     get:
@@ -788,25 +724,163 @@ paths:
         '200': { description: All marked read }
 
   # =========================================================================
-  # 10. LOGISTICS DISPATCH MODULE (1 Endpoint)
+  # 8. FAVOURITES MODULE (3 Endpoints)
   # =========================================================================
-  /api/v1/logistics/webhook/{provider}:
+  /api/v1/favorites:
+    get:
+      tags: [Favorites]
+      summary: Get Customer Saved Favourite Dry Cleaners
+      responses:
+        '200': { description: Favourites list retrieved }
     post:
-      tags: [Logistics]
-      summary: Delivery Provider Webhook Callback (Chowdeck / Uber Direct)
-      security: []
+      tags: [Favorites]
+      summary: Add Dry Cleaner to Favourites
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [dryCleanerId]
+              properties:
+                dryCleanerId: { type: integer, format: int64 }
+      responses:
+        '201': { description: Added to favourites }
+
+  /api/v1/favorites/{dryCleanerId}:
+    delete:
+      tags: [Favorites]
+      summary: Remove Dry Cleaner from Favourites
       parameters:
-        - name: provider
+        - name: dryCleanerId
           in: path
           required: true
-          schema: { type: string, example: "chowdeck" }
+          schema: { type: integer, format: int64 }
+      responses:
+        '200': { description: Removed from favourites }
+
+  # =========================================================================
+  # 9. WALLET & ANCHOR BANKING MODULE (5 Endpoints)
+  # =========================================================================
+  /api/v1/wallet/balance:
+    get:
+      tags: [Wallet]
+      summary: Get Wallet Balance & Virtual Bank Account Details
+      responses:
+        '200': { description: Wallet balance and virtual account details retrieved }
+
+  /api/v1/wallet/summary:
+    get:
+      tags: [Wallet]
+      summary: Get Wallet Balance & Recent Transaction History
+      responses:
+        '200': { description: Summary and top 50 transactions retrieved }
+
+  /api/v1/wallet/credit:
+    post:
+      tags: [Wallet]
+      summary: Internal Wallet Credit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId, amount, description, reference]
+              properties:
+                userId: { type: integer, format: int64 }
+                amount: { type: number }
+                description: { type: string }
+                reference: { type: string }
+      responses:
+        '200': { description: Wallet credited }
+
+  /api/v1/wallet/debit:
+    post:
+      tags: [Wallet]
+      summary: Internal Wallet Debit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId, amount, description, reference]
+              properties:
+                userId: { type: integer, format: int64 }
+                amount: { type: number }
+                description: { type: string }
+                reference: { type: string }
+      responses:
+        '200': { description: Wallet debited }
+
+  /api/v1/anchor/webhook:
+    post:
+      tags: [Wallet]
+      summary: Anchor Virtual Account Bank Transfer Deposit Webhook
+      security: []
+      parameters:
+        - name: x-anchor-signature
+          in: header
+          required: false
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                event: { type: string, example: "deposit.successful" }
+                data: { type: object }
+      responses:
+        '200': { description: Webhook processed }
+        '401': { description: Invalid HMAC signature }
+
+  # =========================================================================
+  # 10. PAYMENT (PAYSTACK) MODULE (3 Endpoints)
+  # =========================================================================
+  /api/v1/payment/initiate:
+    post:
+      tags: [Payment]
+      summary: Initiate Paystack Card / Bank Payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, amount]
+              properties:
+                email: { type: string }
+                amount: { type: number }
+      responses:
+        '200': { description: Payment authorization URL returned }
+
+  /api/v1/payment/webhook:
+    post:
+      tags: [Payment]
+      summary: Paystack Payment Webhook Callback
+      security: []
+      parameters:
+        - name: x-paystack-signature
+          in: header
+          required: true
+          schema: { type: string }
       requestBody:
         required: true
         content:
           application/json:
             schema: { type: object }
       responses:
-        '200': { description: Logistics webhook processed }
+        '200': { description: Paystack webhook processed }
+
+  /api/v1/payment/history:
+    get:
+      tags: [Payment]
+      summary: Get Payment Transaction History
+      responses:
+        '200': { description: Payment history retrieved }
 
 components:
   securitySchemes:

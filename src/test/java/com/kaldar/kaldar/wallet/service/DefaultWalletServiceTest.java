@@ -5,12 +5,14 @@ import com.kaldar.kaldar.shared.domain.exceptions.InsufficientWalletBalanceExcep
 import com.kaldar.kaldar.shared.domain.exceptions.InvalidWalletAmountException;
 import com.kaldar.kaldar.shared.domain.exceptions.UserNotFoundException;
 import com.kaldar.kaldar.shared.domain.repository.UserEntityRepository;
+import com.kaldar.kaldar.shared.infrastructure.anchor.AnchorClient;
 import com.kaldar.kaldar.wallet.application.dto.WalletCreditRequest;
 import com.kaldar.kaldar.wallet.application.dto.WalletDebitRequest;
 import com.kaldar.kaldar.wallet.application.dto.WalletSummaryResponse;
 import com.kaldar.kaldar.wallet.application.service.impl.DefaultWalletService;
 import com.kaldar.kaldar.wallet.domain.model.Wallet;
 import com.kaldar.kaldar.wallet.domain.model.WalletTransaction;
+import com.kaldar.kaldar.wallet.domain.model.WalletTransactionType;
 import com.kaldar.kaldar.wallet.domain.repository.WalletRepository;
 import com.kaldar.kaldar.wallet.domain.repository.WalletTransactionRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,7 +39,7 @@ class DefaultWalletServiceTest {
     @Mock private WalletRepository walletRepository;
     @Mock private WalletTransactionRepository transactionRepository;
     @Mock private UserEntityRepository userEntityRepository;
-    @Mock private com.kaldar.kaldar.shared.infrastructure.anchor.AnchorClient anchorClient;
+    @Mock private AnchorClient anchorClient;
 
     private DefaultWalletService walletService;
 
@@ -70,7 +72,7 @@ class DefaultWalletServiceTest {
             CustomerEntity user = buildUser();
             Wallet wallet = buildWallet(user);
 
-            when(walletRepository.findByUserId(1L)).thenReturn(Optional.of(wallet));
+            when(walletRepository.findByUserIdForUpdate(1L)).thenReturn(Optional.of(wallet));
             when(walletRepository.save(any(Wallet.class))).thenAnswer(inv -> inv.getArgument(0));
 
             walletService.creditWallet(new WalletCreditRequest(1L, BigDecimal.valueOf(5000.0), "Earnings", "REF123"));
@@ -81,9 +83,22 @@ class DefaultWalletServiceTest {
         }
 
         @Test
+        @DisplayName("should skip crediting if transaction reference has already been processed (idempotency check)")
+        void shouldSkipDuplicateCreditReference() {
+            when(transactionRepository.existsByReference("REF123")).thenReturn(true);
+
+            walletService.creditWallet(new WalletCreditRequest(1L, BigDecimal.valueOf(5000.0), "Earnings", "REF123"));
+
+            verify(walletRepository, never()).findByUserIdForUpdate(anyLong());
+            verify(walletRepository, never()).save(any());
+            verify(transactionRepository, never()).save(any());
+        }
+
+        @Test
         @DisplayName("should lazily initialize new wallet if none exists when crediting")
         void shouldInitNewWalletWhenNoneExists() {
             CustomerEntity user = buildUser();
+            when(walletRepository.findByUserIdForUpdate(1L)).thenReturn(Optional.empty());
             when(walletRepository.findByUserId(1L)).thenReturn(Optional.empty());
             when(userEntityRepository.findById(1L)).thenReturn(Optional.of(user));
             when(walletRepository.save(any(Wallet.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -91,12 +106,13 @@ class DefaultWalletServiceTest {
             walletService.creditWallet(new WalletCreditRequest(1L, BigDecimal.valueOf(1000.0), "Welcome Bonus", "REF000"));
 
             verify(userEntityRepository).findById(1L);
-            verify(walletRepository, times(2)).save(any(Wallet.class)); 
+            verify(walletRepository, times(2)).save(any(Wallet.class));
         }
 
         @Test
         @DisplayName("should throw UserNotFoundException if user profile does not exist on lazy wallet creation")
         void shouldThrowUserNotFoundOnLazyInit() {
+            when(walletRepository.findByUserIdForUpdate(99L)).thenReturn(Optional.empty());
             when(walletRepository.findByUserId(99L)).thenReturn(Optional.empty());
             when(userEntityRepository.findById(99L)).thenReturn(Optional.empty());
 
@@ -133,7 +149,7 @@ class DefaultWalletServiceTest {
             Wallet wallet = buildWallet(user);
             wallet.setBalance(BigDecimal.valueOf(10000.0));
 
-            when(walletRepository.findByUserId(1L)).thenReturn(Optional.of(wallet));
+            when(walletRepository.findByUserIdForUpdate(1L)).thenReturn(Optional.of(wallet));
             when(walletRepository.save(any(Wallet.class))).thenAnswer(inv -> inv.getArgument(0));
 
             walletService.debitWallet(new WalletDebitRequest(1L, BigDecimal.valueOf(3500.0), "Checkout", "REF987"));
@@ -144,13 +160,25 @@ class DefaultWalletServiceTest {
         }
 
         @Test
+        @DisplayName("should skip debiting if transaction reference has already been processed")
+        void shouldSkipDuplicateDebitReference() {
+            when(transactionRepository.existsByReference("REF987")).thenReturn(true);
+
+            walletService.debitWallet(new WalletDebitRequest(1L, BigDecimal.valueOf(3500.0), "Checkout", "REF987"));
+
+            verify(walletRepository, never()).findByUserIdForUpdate(anyLong());
+            verify(walletRepository, never()).save(any());
+            verify(transactionRepository, never()).save(any());
+        }
+
+        @Test
         @DisplayName("should throw InsufficientWalletBalanceException when balance is insufficient")
         void shouldThrowWhenInsufficientBalance() {
             CustomerEntity user = buildUser();
             Wallet wallet = buildWallet(user);
             wallet.setBalance(BigDecimal.valueOf(1000.0));
 
-            when(walletRepository.findByUserId(1L)).thenReturn(Optional.of(wallet));
+            when(walletRepository.findByUserIdForUpdate(1L)).thenReturn(Optional.of(wallet));
 
             assertThatThrownBy(() -> walletService.debitWallet(new WalletDebitRequest(1L, BigDecimal.valueOf(2000.0), "Checkout", "REF")))
                     .isInstanceOf(InsufficientWalletBalanceException.class)
@@ -185,12 +213,12 @@ class DefaultWalletServiceTest {
             Wallet wallet = buildWallet(user);
             wallet.setBalance(BigDecimal.valueOf(25000.0));
 
-            WalletTransaction tx1 = new WalletTransaction(wallet, BigDecimal.valueOf(5000.0), "CREDIT", "Earnings", "REF1");
+            WalletTransaction tx1 = new WalletTransaction(wallet, BigDecimal.valueOf(5000.0), WalletTransactionType.CREDIT, "Earnings", "REF1");
             tx1.setId(101L);
             tx1.setCreatedAt(LocalDateTime.now().minusDays(1));
 
             when(walletRepository.findByUserId(1L)).thenReturn(Optional.of(wallet));
-            when(transactionRepository.findByWalletIdOrderByCreatedAtDesc(10L)).thenReturn(List.of(tx1));
+            when(transactionRepository.findTop50ByWalletIdOrderByCreatedAtDesc(10L)).thenReturn(List.of(tx1));
 
             WalletSummaryResponse response = walletService.getWalletSummary(1L);
 
@@ -200,17 +228,16 @@ class DefaultWalletServiceTest {
         }
 
         @Test
-        @DisplayName("should initialize new wallet and return zero balance when no wallet exists")
+        @DisplayName("should return zero balance and empty history without DB mutation when no wallet exists")
         void shouldReturnZeroSummaryWhenNoWalletExists() {
-            CustomerEntity user = buildUser();
             when(walletRepository.findByUserId(1L)).thenReturn(Optional.empty());
-            when(userEntityRepository.findById(1L)).thenReturn(Optional.of(user));
-            when(walletRepository.save(any(Wallet.class))).thenAnswer(inv -> inv.getArgument(0));
+            when(userEntityRepository.existsById(1L)).thenReturn(true);
 
             WalletSummaryResponse response = walletService.getWalletSummary(1L);
 
             assertThat(response.getBalance()).isEqualByComparingTo(BigDecimal.ZERO);
             assertThat(response.getTransactionHistory()).isEmpty();
+            verify(walletRepository, never()).save(any());
         }
     }
 }
