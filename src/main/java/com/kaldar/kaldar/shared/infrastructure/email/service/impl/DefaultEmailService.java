@@ -1,18 +1,20 @@
 package com.kaldar.kaldar.shared.infrastructure.email.service.impl;
 
-import com.kaldar.kaldar.shared.infrastructure.auth.dto.request.SendVerificationEmailRequest;
-import com.kaldar.kaldar.shared.infrastructure.auth.dto.response.SendVerificationEmailResponse;
 import com.kaldar.kaldar.shared.domain.exceptions.EmailSendException;
+import com.kaldar.kaldar.shared.infrastructure.auth.dto.response.SendVerificationEmailResponse;
 import com.kaldar.kaldar.shared.infrastructure.email.service.EmailService;
+import lombok.extern.slf4j.Slf4j;
 import org.simplejavamail.api.email.Email;
 import org.simplejavamail.api.mailer.Mailer;
 import org.simplejavamail.email.EmailBuilder;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
+@Slf4j
 @Service
 public class DefaultEmailService implements EmailService {
 
@@ -22,8 +24,8 @@ public class DefaultEmailService implements EmailService {
     @Value("${spring.mail.from-email}")
     private String fromEmail;
 
-    private final Mailer mailer;
-
+    private final Mailer primaryMailer;
+    private final Mailer fallbackMailer;
 
     @Value("${security.otp.expiry-minutes}")
     private int otpExpiryMinutes;
@@ -34,50 +36,62 @@ public class DefaultEmailService implements EmailService {
     @Value("${app.password-reset.base-url:http://localhost:8080/reset-password.html}")
     private String passwordResetBaseUrl;
 
-    public DefaultEmailService(Mailer mailer) {
-        this.mailer = mailer;
+    public DefaultEmailService(@Qualifier("primaryMailer") Mailer primaryMailer,
+                               @Qualifier("fallbackMailer") Mailer fallbackMailer) {
+        this.primaryMailer = primaryMailer;
+        this.fallbackMailer = fallbackMailer;
     }
 
     @Override
     public SendVerificationEmailResponse sendVerificationEmail(String recipientEmail, String otpDigitNumberGenerator) {
-        try {
-            Email email = EmailBuilder.startingBlank()
-                    .from(fromName, fromEmail)
-                    .to(recipientEmail)
-                    .withSubject(" Your Verification Code ")
-                    .withPlainText("Your verification code is: " + otpDigitNumberGenerator +
-                            "\n\nIt expires in " + otpExpiryMinutes + " minutes.")
-                    .withHTMLText(
-                            "<h2 style='color:#2c3e50;'>Verification Code</h2>" +
-                                    "<p>Your OTP is: <b style='font-size:18px;'>" +
-                                    otpDigitNumberGenerator+ "</b></p>" + "<p>This code will expire in <b>" +
-                                    otpExpiryMinutes + "</b> minutes.</p>")
-                    .buildEmail();
-            mailer.sendMail(email);
-            return new SendVerificationEmailResponse(recipientEmail, "Verification code sent successfully", java.time.LocalDateTime.now().plusMinutes(otpExpiryMinutes).toString());
-        } catch (Exception ex) {
-            throw new EmailSendException(ex.getMessage());
-        }
+        Email email = EmailBuilder.startingBlank()
+                .from(fromName, fromEmail)
+                .to(recipientEmail)
+                .withSubject("Your Verification Code")
+                .withPlainText("Your verification code is: " + otpDigitNumberGenerator +
+                        "\n\nIt expires in " + otpExpiryMinutes + " minutes.")
+                .withHTMLText(
+                        "<h2 style='color:#2c3e50;'>Verification Code</h2>" +
+                                "<p>Your OTP is: <b style='font-size:18px;'>" +
+                                otpDigitNumberGenerator + "</b></p>" +
+                                "<p>This code will expire in <b>" +
+                                otpExpiryMinutes + "</b> minutes.</p>")
+                .buildEmail();
+
+        sendWithFallback(email);
+        return new SendVerificationEmailResponse(recipientEmail, "Verification code sent successfully", java.time.LocalDateTime.now().plusMinutes(otpExpiryMinutes).toString());
     }
 
     @Override
     public void sendPasswordResetEmail(String recipientEmail, String resetToken, String resetUrl) {
+        String link = resetUrl == null || resetUrl.isBlank()
+                ? buildResetUrl(recipientEmail, resetToken)
+                : resetUrl;
+        Email email = EmailBuilder.startingBlank()
+                .from(fromName, fromEmail)
+                .to(recipientEmail)
+                .withSubject("Password Reset")
+                .withPlainText("Use this token to reset your password: " + resetToken +
+                        "\nReset link: " + link +
+                        "\n\nIt expires in " + passwordResetExpiryMinutes + " minutes.")
+                .withHTMLText(buildPasswordResetHtml(resetToken, link))
+                .buildEmail();
+
+        sendWithFallback(email);
+    }
+
+    private void sendWithFallback(Email email) {
         try {
-            String link = resetUrl == null || resetUrl.isBlank()
-                    ? buildResetUrl(recipientEmail, resetToken)
-                    : resetUrl;
-            Email email = EmailBuilder.startingBlank()
-                    .from(fromName, fromEmail)
-                    .to(recipientEmail)
-                    .withSubject("Password Reset")
-                    .withPlainText("Use this token to reset your password: " + resetToken +
-                            "\nReset link: " + link +
-                            "\n\nIt expires in " + passwordResetExpiryMinutes + " minutes.")
-                    .withHTMLText(buildPasswordResetHtml(resetToken, link))
-                    .buildEmail();
-            mailer.sendMail(email);
-        } catch (Exception ex) {
-            throw new EmailSendException(ex.getMessage());
+            primaryMailer.sendMail(email);
+        } catch (Exception primaryEx) {
+            log.warn("Primary SMTP mail delivery failed: {}. Attempting fallback port...", primaryEx.getMessage());
+            try {
+                fallbackMailer.sendMail(email);
+                log.info("Email successfully delivered using fallback SMTP port.");
+            } catch (Exception fallbackEx) {
+                log.error("Fallback SMTP mail delivery failed: {}", fallbackEx.getMessage(), fallbackEx);
+                throw new EmailSendException("Failed to send email via both primary and fallback SMTP ports: " + fallbackEx.getMessage());
+            }
         }
     }
 
@@ -97,6 +111,6 @@ public class DefaultEmailService implements EmailService {
         if (passwordResetBaseUrl.contains("?")) {
             return passwordResetBaseUrl + "&email=" + encodedEmail + "&token=" + encodedToken;
         }
-        return passwordResetBaseUrl + "?email=" + encodedEmail + "&token=" + encodedToken;
+        return passwordResetBaseUrl + "?email=" + encodedEmail + "?token=" + encodedToken;
     }
 }

@@ -67,7 +67,45 @@ paths:
                 password: { type: string, example: "Password123!" }
       responses:
         '200': { description: Login successful, returns JWT bearer token }
-        '401': { description: Invalid credentials or account unverified }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '500': { $ref: '#/components/responses/InternalServerError' }
+
+  /api/v1/auth/session:
+    get:
+      tags: [Authentication]
+      summary: Get Authenticated User Session
+      description: Returns details of the currently authenticated user session, including customerId or dryCleanerId.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Session details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalServerError' }
+
+  /session:
+    get:
+      tags: [Authentication]
+      summary: Get Authenticated User Session (Root Alias)
+      description: Alias endpoint returning details of currently authenticated session, including customerId or dryCleanerId.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Session details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/InternalServerError' }
 
   /api/v1/auth/verify-otp:
     post:
@@ -931,3 +969,112 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+
+  schemas:
+    ApiResponse:
+      type: object
+      required: [isSuccess, status, message]
+      properties:
+        isSuccess:
+          type: boolean
+          example: true
+        status:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: "Operation completed successfully"
+        data:
+          type: object
+          nullable: true
+
+    ErrorResponse:
+      type: object
+      required: [isSuccess, status, message]
+      properties:
+        isSuccess:
+          type: boolean
+          example: false
+        status:
+          type: integer
+          example: 400
+        message:
+          type: string
+          example: "Validation error or invalid request payload"
+        data:
+          type: object
+          nullable: true
+
+    SessionResponse:
+      type: object
+      required: [id, email, firstName, lastName, roles, userType]
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        email:
+          type: string
+          example: "customer@kaldar.com"
+        firstName:
+          type: string
+          example: "John"
+        lastName:
+          type: string
+          example: "Doe"
+        roles:
+          type: array
+          items:
+            type: string
+          example: ["CUSTOMER"]
+        userType:
+          type: string
+          example: "CUSTOMER"
+        customerId:
+          type: integer
+          format: int64
+          example: 1
+          nullable: true
+        dryCleanerId:
+          type: integer
+          format: int64
+          example: 1
+          nullable: true
+
+  responses:
+    BadRequest:
+      description: Bad Request (400) - Invalid or missing required parameters, or payload validation failure.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Unauthorized (401) - Missing, expired, or invalid JWT bearer token.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: Forbidden (403) - Insufficient permissions or role mismatch to access resource.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Not Found (404) - Target resource, entity, or user could not be found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnprocessableEntity:
+      description: Unprocessable Entity (422) - Business rule violation or domain exception.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalServerError:
+      description: Internal Server Error (500) - Unexpected error occurred on server.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
