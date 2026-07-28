@@ -31,8 +31,8 @@ import java.util.Map;
  * Production-grade Global Exception Handler.
  *
  * <p>Ensures that every exception maps to an appropriate HTTP status code
- * (400, 401, 403, 404, 405, 409, 415, 422) with detailed error metadata,
- * preventing generic 500 Internal Server Errors from being exposed to end users.</p>
+ * (400, 401, 403, 404, 405, 409, 415, 422) with clean, user-friendly error messages
+ * ready for direct display in the frontend UI.</p>
  */
 @RestControllerAdvice
 public class GlobalApplicationExceptionHandler {
@@ -51,14 +51,9 @@ public class GlobalApplicationExceptionHandler {
     }
 
     // =========================================================================
-    // 1. KALDAR BUSINESS EXCEPTION HIERARCHY (400, 404, 409, etc.)
+    // 1. KALDAR BUSINESS EXCEPTION HIERARCHY (400, 404, 409, 422, etc.)
     // =========================================================================
 
-    /**
-     * Catches all custom Kaldar business exceptions (e.g. FavouriteAlreadyExistsException,
-     * NotificationNotFoundException, InsufficientWalletBalanceException, PaymentProcessingException, etc.).
-     * Returns the exact HTTP status carried inside the exception.
-     */
     @ExceptionHandler(KaldarBusinessException.class)
     public ResponseEntity<ApiErrorResponse> handleKaldarBusinessException(
             KaldarBusinessException exception, HttpServletRequest request) {
@@ -74,15 +69,12 @@ public class GlobalApplicationExceptionHandler {
         return ResponseEntity.status(exception.getHttpStatus()).body(apiErrorResponse);
     }
 
-    /**
-     * Legacy domain exceptions extending RuntimeException directly.
-     */
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleUserNotFoundException(
             UserNotFoundException exception, HttpServletRequest request) {
         log.warn("User not found on [{} {}]: {}", request.getMethod(), request.getRequestURI(), exception.getMessage());
         ApiErrorResponse apiErrorResponse = buildErrorResponse(
-                exception.getMessage(),
+                "We couldn't find an account matching your request.",
                 HttpStatus.NOT_FOUND,
                 request.getRequestURI(),
                 null
@@ -93,7 +85,21 @@ public class GlobalApplicationExceptionHandler {
     @ExceptionHandler({
             CustomerEmailAlreadyExist.class,
             DryCleanerEmailAlreadyExistException.class,
-            DryCleanerBusinessEmailExistException.class,
+            DryCleanerBusinessEmailExistException.class
+    })
+    public ResponseEntity<ApiErrorResponse> handleEmailAlreadyExistExceptions(
+            RuntimeException exception, HttpServletRequest request) {
+        log.warn("Email conflict on [{} {}]: {}", request.getMethod(), request.getRequestURI(), exception.getMessage());
+        ApiErrorResponse apiErrorResponse = buildErrorResponse(
+                "An account with this email address already exists. Please sign in instead.",
+                HttpStatus.CONFLICT,
+                request.getRequestURI(),
+                null
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(apiErrorResponse);
+    }
+
+    @ExceptionHandler({
             DuplicateRegistrationNumberException.class,
             DuplicateTaxIdentificationNumberException.class,
             BusinessAlreadyVerifiedException.class
@@ -102,7 +108,7 @@ public class GlobalApplicationExceptionHandler {
             RuntimeException exception, HttpServletRequest request) {
         log.warn("Conflict exception on [{} {}]: {}", request.getMethod(), request.getRequestURI(), exception.getMessage());
         ApiErrorResponse apiErrorResponse = buildErrorResponse(
-                exception.getMessage(),
+                exception.getMessage() != null ? exception.getMessage() : "A record with these business credentials already exists.",
                 HttpStatus.CONFLICT,
                 request.getRequestURI(),
                 null
@@ -139,7 +145,7 @@ public class GlobalApplicationExceptionHandler {
             BadCredentialsException exception, HttpServletRequest request) {
         log.warn("Bad credentials on [{} {}]", request.getMethod(), request.getRequestURI());
         ApiErrorResponse apiErrorResponse = buildErrorResponse(
-                "Invalid email or password",
+                "Invalid email or password. Please check your login details and try again.",
                 HttpStatus.UNAUTHORIZED,
                 request.getRequestURI(),
                 null
@@ -152,7 +158,7 @@ public class GlobalApplicationExceptionHandler {
             AccessDeniedException exception, HttpServletRequest request) {
         log.warn("Access denied on [{} {}]: {}", request.getMethod(), request.getRequestURI(), exception.getMessage());
         ApiErrorResponse apiErrorResponse = buildErrorResponse(
-                "Access denied: you do not have permission to access this resource",
+                "Access denied. You do not have permission to perform this action.",
                 HttpStatus.FORBIDDEN,
                 request.getRequestURI(),
                 null
@@ -165,7 +171,7 @@ public class GlobalApplicationExceptionHandler {
             AuthenticationException exception, HttpServletRequest request) {
         log.warn("Authentication failed on [{} {}]: {}", request.getMethod(), request.getRequestURI(), exception.getMessage());
         ApiErrorResponse apiErrorResponse = buildErrorResponse(
-                "Authentication failed: " + exception.getMessage(),
+                "Your session has expired or authentication failed. Please log in again.",
                 HttpStatus.UNAUTHORIZED,
                 request.getRequestURI(),
                 null
@@ -185,8 +191,12 @@ public class GlobalApplicationExceptionHandler {
                 .forEach(error -> fieldErrors.put(error.getField(), error.getDefaultMessage()));
 
         log.warn("Validation failed on [{} {}]: {}", request.getMethod(), request.getRequestURI(), fieldErrors);
+
+        String primaryErrorMessage = fieldErrors.values().stream().findFirst()
+                .orElse("Please fill in all required fields correctly.");
+
         ApiErrorResponse apiErrorResponse = buildErrorResponse(
-                "Invalid request payload data",
+                primaryErrorMessage,
                 HttpStatus.BAD_REQUEST,
                 request.getRequestURI(),
                 fieldErrors
@@ -199,7 +209,7 @@ public class GlobalApplicationExceptionHandler {
             ConstraintViolationException exception, HttpServletRequest request) {
         log.warn("Constraint violation on [{} {}]: {}", request.getMethod(), request.getRequestURI(), exception.getMessage());
         ApiErrorResponse apiErrorResponse = buildErrorResponse(
-                "Request validation failed: " + exception.getMessage(),
+                "Validation failed. Please check your inputs and try again.",
                 HttpStatus.BAD_REQUEST,
                 request.getRequestURI(),
                 null
@@ -212,7 +222,7 @@ public class GlobalApplicationExceptionHandler {
             HttpMessageNotReadableException exception, HttpServletRequest request) {
         log.warn("Malformed JSON on [{} {}]: {}", request.getMethod(), request.getRequestURI(), exception.getMessage());
         ApiErrorResponse apiErrorResponse = buildErrorResponse(
-                "Malformed request body or unparseable JSON payload",
+                "Invalid request format. Please check submitted data.",
                 HttpStatus.BAD_REQUEST,
                 request.getRequestURI(),
                 null
@@ -225,7 +235,7 @@ public class GlobalApplicationExceptionHandler {
             HttpRequestMethodNotSupportedException exception, HttpServletRequest request) {
         log.warn("Method not supported on [{} {}]: {}", request.getMethod(), request.getRequestURI(), exception.getMessage());
         ApiErrorResponse apiErrorResponse = buildErrorResponse(
-                "HTTP method '" + request.getMethod() + "' is not supported for this endpoint",
+                "The requested operation is not supported.",
                 HttpStatus.METHOD_NOT_ALLOWED,
                 request.getRequestURI(),
                 null
@@ -242,7 +252,7 @@ public class GlobalApplicationExceptionHandler {
 
         log.warn("Type mismatch on [{} {}]: {}", request.getMethod(), request.getRequestURI(), detail);
         ApiErrorResponse apiErrorResponse = buildErrorResponse(
-                "Invalid parameter format",
+                "Invalid request parameter format.",
                 HttpStatus.BAD_REQUEST,
                 request.getRequestURI(),
                 detail
@@ -255,7 +265,7 @@ public class GlobalApplicationExceptionHandler {
             MissingServletRequestParameterException exception, HttpServletRequest request) {
         log.warn("Missing parameter on [{} {}]: {}", request.getMethod(), request.getRequestURI(), exception.getMessage());
         ApiErrorResponse apiErrorResponse = buildErrorResponse(
-                "Required query parameter '" + exception.getParameterName() + "' is missing",
+                "Required parameter '" + exception.getParameterName() + "' is missing.",
                 HttpStatus.BAD_REQUEST,
                 request.getRequestURI(),
                 null
@@ -268,7 +278,7 @@ public class GlobalApplicationExceptionHandler {
             MissingRequestHeaderException exception, HttpServletRequest request) {
         log.warn("Missing header on [{} {}]: {}", request.getMethod(), request.getRequestURI(), exception.getMessage());
         ApiErrorResponse apiErrorResponse = buildErrorResponse(
-                "Required HTTP header '" + exception.getHeaderName() + "' is missing",
+                "Required request header '" + exception.getHeaderName() + "' is missing.",
                 HttpStatus.BAD_REQUEST,
                 request.getRequestURI(),
                 null
@@ -281,7 +291,7 @@ public class GlobalApplicationExceptionHandler {
             NoHandlerFoundException exception, HttpServletRequest request) {
         log.warn("Endpoint not found: [{} {}]", request.getMethod(), request.getRequestURI());
         ApiErrorResponse apiErrorResponse = buildErrorResponse(
-                "The requested endpoint '" + request.getRequestURI() + "' does not exist",
+                "The requested page or endpoint could not be found.",
                 HttpStatus.NOT_FOUND,
                 request.getRequestURI(),
                 null
@@ -294,7 +304,7 @@ public class GlobalApplicationExceptionHandler {
             DataIntegrityViolationException exception, HttpServletRequest request) {
         log.error("Data integrity violation on [{} {}]: {}", request.getMethod(), request.getRequestURI(), exception.getMessage());
         ApiErrorResponse apiErrorResponse = buildErrorResponse(
-                "Database constraint violation: duplicate record or invalid reference",
+                "Record conflict: A record with these details already exists.",
                 HttpStatus.CONFLICT,
                 request.getRequestURI(),
                 null
@@ -310,7 +320,7 @@ public class GlobalApplicationExceptionHandler {
             RuntimeException exception, HttpServletRequest request) {
         log.warn("IllegalArgument/IllegalState on [{} {}]: {}", request.getMethod(), request.getRequestURI(), exception.getMessage());
         ApiErrorResponse apiErrorResponse = buildErrorResponse(
-                exception.getMessage(),
+                exception.getMessage() != null ? exception.getMessage() : "Invalid request parameters.",
                 HttpStatus.BAD_REQUEST,
                 request.getRequestURI(),
                 null
@@ -323,7 +333,7 @@ public class GlobalApplicationExceptionHandler {
             FileUploadException exception, HttpServletRequest request) {
         log.warn("File upload error on [{} {}]: {}", request.getMethod(), request.getRequestURI(), exception.getMessage());
         ApiErrorResponse apiErrorResponse = buildErrorResponse(
-                exception.getMessage(),
+                exception.getMessage() != null ? exception.getMessage() : "File upload failed. Please try again with a valid file.",
                 HttpStatus.BAD_REQUEST,
                 request.getRequestURI(),
                 null
@@ -336,7 +346,7 @@ public class GlobalApplicationExceptionHandler {
             MaxUploadSizeExceededException exception, HttpServletRequest request) {
         log.warn("File size limit exceeded on [{} {}]", request.getMethod(), request.getRequestURI());
         ApiErrorResponse apiErrorResponse = buildErrorResponse(
-                "File size exceeds the maximum allowed limit of 10 MB",
+                "The selected file is too large. Maximum allowed file size is 10 MB.",
                 HttpStatus.PAYLOAD_TOO_LARGE,
                 request.getRequestURI(),
                 null
@@ -348,11 +358,6 @@ public class GlobalApplicationExceptionHandler {
     // 4. UNHANDLED INTERNAL SERVER ERRORS (500)
     // =========================================================================
 
-    /**
-     * True fallback catch-all for unexpected internal server errors.
-     * Logs full stack trace to server logs, but returns a clean, safe message
-     * to the user without exposing sensitive Java stack traces.
-     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> handleGeneralException(
             Exception exception, HttpServletRequest request) {

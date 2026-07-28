@@ -15,8 +15,9 @@ spring:
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
   mail:
-    host: smtp.gmail.com
-    port: ${MAIL_PORT:587}
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:465}
+    fallback-port: ${MAIL_FALLBACK_PORT:587}
     username: ${MAIL_USERNAME}
     password: ${MAIL_PASSWORD}
     from-name: "Kaldar"
